@@ -1,0 +1,15 @@
+python-dotenv==0.17.1
+typing-extensions==3.7.4
+flask==2.0.1
+pillow==8.2.0
+shapely==1.7.1
+requests==2.25.1
+aiohttp==3.7.4.post0
+aiofiles==0.7.0
+efficientnet==1.0.0
+segmentation-models==1.0.1
+flask-session==0.3.2
+waitress==2.0.0
+tensorflow==2.4.1
+numpy==1.19.5
+opencv-python-headless==4.5.2.54
