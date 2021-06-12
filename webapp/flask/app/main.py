@@ -10,7 +10,7 @@
 # import basic functionality
 import helpers.ts_imgutil as ts_imgutil
 from helpers.ts_gmaps import GoogleMap
-from helpers.models import Classification, Segmentation
+from models import Classification, Segmentation
 import helpers.ts_maps as ts_maps
 from flask import Flask, render_template, send_from_directory, request, session, Response
 from flask_session import Session

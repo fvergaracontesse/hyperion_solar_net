@@ -192,7 +192,7 @@ function getObjects(type) {
                 let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
                 console.log(imageBounds);
                 spOverlay = new google.maps.GroundOverlay(
-                   "http://localhost:5000" + tile["url"],
+                   tile["url"],
                    imageBounds
                 );
                 spOverlay.setMap(currentMap.map)
