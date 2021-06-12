@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+
+  flask:
+    build: flask
+    restart: always
+    command: flask run --host 0.0.0.0
+
+  nginx:
+    build: nginx
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - FLASK_HOST=flask
+      - FLASK_PORT=5000

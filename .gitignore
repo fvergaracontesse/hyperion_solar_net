@@ -1,2 +1,2 @@
-webapp/app/models/*
-webapp/app/img/segmentation/*
+webapp/flask/app/models/*
+webapp/flask/app/img/segmentation/*
