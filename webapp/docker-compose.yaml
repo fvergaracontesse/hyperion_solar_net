@@ -19,5 +19,4 @@ services:
     environment:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       - FLASK_HOST=flask
-      - FLASK_PORT=5000
-~                       
+      - FLASK_PORT=5000                      
