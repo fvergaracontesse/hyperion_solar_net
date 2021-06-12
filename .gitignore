@@ -1,2 +1,1 @@
-webapp/flask/app/models/*
-webapp/flask/app/img/segmentation/*
+*.h5

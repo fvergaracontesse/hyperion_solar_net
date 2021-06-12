@@ -5,6 +5,11 @@ services:
     build: flask
     restart: always
     command: flask run --host 0.0.0.0
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - capabilities: [gpu]
 
   nginx:
     build: nginx
@@ -15,3 +20,4 @@ services:
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       - FLASK_HOST=flask
       - FLASK_PORT=5000
+~                       

@@ -1,3 +1,16 @@
-docker build -t flask-container ./flask
-docker build -t nginx-container ./nginx
-docker-compose up --build
+# Start docker
+
+```
+ sudo service docker start
+ sudo usermod -a -G docker ec2-user
+```
+
+# Docker build
+
+```
+ docker-compose up --build
+```
+
+# Install nvidia drivers.
+
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-nvidia-driver.html
