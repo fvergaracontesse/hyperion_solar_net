@@ -55,14 +55,18 @@ class Classification:
 
     def predict(self, tiles):
         # predicting images
-        # images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
-        # images = np.vstack(images)
+        images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
+        images = np.vstack(images)
+        predictions = self.model.predict(images).flatten()
+        predictions = tf.nn.sigmoid(predictions)
+        predictions = tf.where(predictions < 0.5, 0, 1).numpy().tolist()
         for tile in tiles:
-            image_arr = np.expand_dims(img_to_array(load_img(tile['filename'], grayscale=False)), axis=0)
-            prediction = self.model.predict(image_arr).flatten()
+            #image_arr = np.expand_dims(img_to_array(load_img(tile['filename'], grayscale=False)), axis=0)
+            #prediction = self.model.predict(image_arr).flatten()
             # Apply a sigmoid since our model returns logits
-            prediction = tf.nn.sigmoid(prediction)
-            tile["prediction"] = tf.where(prediction < 0.5, 0, 1).numpy().tolist()
+            #prediction = tf.nn.sigmoid(prediction)
+            #tile["prediction"] = tf.where(prediction < 0.5, 0, 1).numpy().tolist()
+            tile["prediction"] = predictions[tile["id"]]
         return tiles
 
 class Segmentation:

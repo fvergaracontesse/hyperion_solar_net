@@ -178,7 +178,7 @@ function getObjects(type) {
         if (type == 'classification') {
             for (tile of JSON.parse(data)) {
                 let myLatLng = {lat:tile["lat"], lng:tile["lng"]};
-                if (tile["prediction"][0]==1) {
+                if (tile["prediction"]==1) {
                     marker = new google.maps.Marker({
                       position: myLatLng,
                       map: currentMap.map
@@ -188,9 +188,9 @@ function getObjects(type) {
             $("#results").replaceWith("Classification completed.");
         };
         if (type == 'segmentation') {
+            currentMap.map.setZoom(21);
             for (tile of JSON.parse(data)) {
                 let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
-                console.log(imageBounds);
                 spOverlay = new google.maps.GroundOverlay(
                    tile["url"],
                    imageBounds

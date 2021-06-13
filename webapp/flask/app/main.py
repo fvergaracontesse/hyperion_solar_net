@@ -131,7 +131,7 @@ def get_objects():
     print("GOOGLE API KEY", google_api_key)
     map = GoogleMap(google_api_key)
 
-    # divide the map into 640x640 parts
+    # divide map into tiles
     tiles, nx, ny, meters, h, w = map.make_tiles(bounds, crop_tiles=crop_tiles)
     print(f" {len(tiles)} tiles, {nx} x {ny}, {meters} x {meters} m")
     # print(" Tile centers:")
