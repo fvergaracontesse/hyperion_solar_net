@@ -129,10 +129,10 @@ def get_objects():
     results = []
     # create a map provider object
     print("GOOGLE API KEY", google_api_key)
-    map = GoogleMap(google_api_key)
+    map_object = GoogleMap(google_api_key)
 
     # divide map into tiles
-    tiles, nx, ny, meters, h, w = map.make_tiles(bounds, crop_tiles=crop_tiles)
+    tiles, nx, ny, meters, h, w = map_object.make_tiles(bounds, crop_tiles=crop_tiles)
     print(f" {len(tiles)} tiles, {nx} x {ny}, {meters} x {meters} m")
     # print(" Tile centers:")
     # for c in tiles:
@@ -159,7 +159,7 @@ def get_objects():
     print("created tmp dir", tmpdirname)
 
     # retrieve tiles and metadata if available
-    meta = map.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
+    meta = map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
     session['metadata'] = meta
     print(" asynchronously retrieved", len(tiles), "files")
 
@@ -183,6 +183,9 @@ def get_objects():
         return json.dumps(tiles)
     elif type == 'segmentation':
         print(" returning segmentation prediction")
+        model = Classification()
+        tiles = model.predict(tiles)
+        tiles = list(filter(lambda x: x["prediction"]==1, tiles))
         model = Segmentation()
         tiles = model.predict(tiles)
         print("TILES", tiles)
