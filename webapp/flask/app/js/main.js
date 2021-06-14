@@ -175,6 +175,21 @@ function getObjects(type) {
   fetch("/getobjects",  { method: "POST", body: formData, })
     .then(result => result.text())
     .then(data => {
+        if (type == 'tiles') {
+            for (tile of JSON.parse(data)) {
+                let bounds = {north: tile["bounds"][0], south: tile["bounds"][2], east: tile["bounds"][1], west: tile["bounds"][3]};
+                const rectangle = new google.maps.Rectangle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#FF0000",
+                    fillOpacity: 0.35,
+                    map: currentMap.map,
+                    bounds: bounds
+              });
+            };
+            $("#results").replaceWith("Number of tiles:" + Object.keys(JSON.parse(data)).length);
+        }
         if (type == 'classification') {
             for (tile of JSON.parse(data)) {
                 let myLatLng = {lat:tile["lat"], lng:tile["lng"]};
@@ -200,9 +215,6 @@ function getObjects(type) {
             };
             $("#results").replaceWith("Segmentation completed.");
         };
-        if (type == 'tiles') {
-            $("#results").replaceWith(data);
-        }
         $("#load-spinner").hide()
     })
 

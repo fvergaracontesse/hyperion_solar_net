@@ -175,7 +175,7 @@ def get_objects():
 
     if type == 'tiles':
         print(" returning number of tiles")
-        return "Number of tiles: "+str(len(tiles))
+        return json.dumps(tiles)
     elif type == 'classification':
         print(" returning classification prediction")
         model = Classification()
