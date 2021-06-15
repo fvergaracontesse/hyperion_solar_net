@@ -194,6 +194,16 @@ function getObjects(type) {
             for (tile of JSON.parse(data)) {
                 let myLatLng = {lat:tile["lat"], lng:tile["lng"]};
                 if (tile["prediction"]==1) {
+                    let bounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+                    const rectangle = new google.maps.Rectangle({
+                        strokeColor: "#FF0000",
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: "#FF0000",
+                        fillOpacity: 0,
+                        map: currentMap.map,
+                        bounds: bounds
+                    });
                     marker = new google.maps.Marker({
                       position: myLatLng,
                       map: currentMap.map
