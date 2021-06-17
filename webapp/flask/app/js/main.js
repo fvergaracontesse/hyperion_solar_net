@@ -175,6 +175,7 @@ class GoogleMap extends SNMap {
 
 function getObjects(type) {
   //let center = currentMap.getCenterUrl();
+  $('#load-spinner').show();
   currentMap.removeOverlays()
   $('#table-tiles').hide()
   $('#table-classification').hide()
@@ -271,6 +272,7 @@ function getObjects(type) {
             });
             $('.loading-wrap').hide();
         };
+        $('#load-spinner').hide();
     })
 
 }

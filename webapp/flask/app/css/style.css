@@ -22,6 +22,10 @@ body {
     padding-bottom: 10px;
 }
 
+.spinner-border {
+    margin: 15px;
+}
+
 .main-container {
     position: absolute;
     display: block;
