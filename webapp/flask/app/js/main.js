@@ -239,11 +239,11 @@ function getObjects(type) {
                       map: currentMap.map
                     });
                     currentMap.markers.push(marker);
-                    $('.loading-wrap').hide();
                 }
                 $('#table-classification').bootstrapTable({
                       data: JSON.parse(data)
                 });
+                $('.loading-wrap').hide();
             };
         };
         if (type == 'segmentation') {
@@ -265,11 +265,11 @@ function getObjects(type) {
                 spOverlay.setMap(currentMap.map);
                 spOverlay.setOpacity(0.2);
                 currentMap.overlays.push(spOverlay);
-                $('.loading-wrap').hide();
             };
             $('#table-segmentation').bootstrapTable({
                   data: JSON.parse(data)
             });
+            $('.loading-wrap').hide();
         };
     })
 
