@@ -98,6 +98,9 @@ class GoogleMap extends SNMap {
     });
 
     this.markers = []
+    this.rectangles = [];
+    this.overlays = [];
+
 
     // Listen for the event fired when the user selects a prediction and retrieve
     // more details for that place.
@@ -157,14 +160,36 @@ class GoogleMap extends SNMap {
     let sw = bounds.getSouthWest();
     return [sw.lng(), ne.lat(), ne.lng(), sw.lat()];
   }
+  removeOverlays(){
+      while(this.markers[0]){
+          this.markers.pop().setMap(null);
+      }
+      while(this.rectangles[0]){
+          this.rectangles.pop().setMap(null);
+      }
+      while(this.overlays[0]){
+          this.overlays.pop().setMap(null);
+      }
+  }
 }
 
 function getObjects(type) {
   //let center = currentMap.getCenterUrl();
-  $("#load-spinner").show()
+  currentMap.removeOverlays()
+  $('#table-tiles').hide()
+  $('#table-classification').hide()
+  $('#table-segmentation').hide()
+  if (type == 'tiles') {
+      $('#table-tiles').show()
+  }
+  if (type == 'classification') {
+      $('#table-classification').show()
+  }
+  if (type == 'segmentation') {
+      $('#table-segmentation').show()
+  }
   // now get the boundaries ready to ship
   let bounds = currentMap.getBoundsUrl();
-
   // first, play the request, but get an estimate of the number of tiles
   const formData = new FormData();
   formData.append('bounds', bounds);
@@ -186,8 +211,13 @@ function getObjects(type) {
                     map: currentMap.map,
                     bounds: bounds
               });
+              currentMap.rectangles.push(rectangle)
+              $('#table-tiles').bootstrapTable({
+                    data: JSON.parse(data)
+              });
+              $('.loading-wrap').hide();
             };
-            $("#results").replaceWith("Number of tiles:" + Object.keys(JSON.parse(data)).length);
+            //$("#results").replaceWith("Number of tiles:" + Object.keys(JSON.parse(data)).length);
         }
         if (type == 'classification') {
             for (tile of JSON.parse(data)) {
@@ -203,19 +233,22 @@ function getObjects(type) {
                         map: currentMap.map,
                         bounds: bounds
                     });
+                    currentMap.rectangles.push(rectangle)
                     marker = new google.maps.Marker({
                       position: myLatLng,
                       map: currentMap.map
                     });
+                    currentMap.markers.push(marker);
+                    $('.loading-wrap').hide();
                 }
+                $('#table-classification').bootstrapTable({
+                      data: JSON.parse(data)
+                });
             };
-            $("#results").replaceWith("Classification completed.");
         };
         if (type == 'segmentation') {
-            //currentMap.map.setZoom(21);
             for (tile of JSON.parse(data)) {
                 let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
-                console.log(imageBounds);
                 const rectangle = new google.maps.Rectangle({
                   strokeColor: "#00FF00",
                   strokeOpacity: 0.8,
@@ -224,17 +257,20 @@ function getObjects(type) {
                   map: currentMap.map,
                   bounds: imageBounds
                 });
-                console.log(tile)
+                currentMap.rectangles.push(rectangle);
                 spOverlay = new google.maps.GroundOverlay(
                    tile["url"],
                    imageBounds
                 );
-                spOverlay.setMap(currentMap.map)
-                spOverlay.setOpacity(0.2)
+                spOverlay.setMap(currentMap.map);
+                spOverlay.setOpacity(0.2);
+                currentMap.overlays.push(spOverlay);
+                $('.loading-wrap').hide();
             };
-            $("#results").replaceWith("Segmentation completed.");
+            $('#table-segmentation').bootstrapTable({
+                  data: JSON.parse(data)
+            });
         };
-        $("#load-spinner").hide()
     })
 
 }

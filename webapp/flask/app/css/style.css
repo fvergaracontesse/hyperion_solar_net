@@ -202,3 +202,15 @@ a:link {
 .card-main {
     min-height: 650px;
 }
+
+#table-tiles {
+    display: none;
+}
+
+#table-segmentation {
+    display: none;
+}
+
+#table-classification {
+    display: none;
+}

@@ -37,11 +37,39 @@
                         </div>
                     </div>
                     <div class="row">
-                        <h3> Results </h3>
                         <div id="load-spinner" class="spinner-border" role="status">
                             <span class="sr-only" aria-hidden="true">Loading...</span>
                         </div>
-                        <div id="results"></div>
+                        <div id="results">
+                            <table id="table-tiles" class="table">
+                                <thead>
+                                <tr>
+                                    <th data-field="id">id</th>
+                                    <th data-field="lat">lat</th>
+                                    <th data-field="lng">lng</th>
+                                </tr>
+                                </thead>
+                            </table>
+                            <table id="table-classification" class="table">
+                                <thead>
+                                <tr>
+                                    <th data-field="id">id</th>
+                                    <th data-field="lat">lat</th>
+                                    <th data-field="lng">lng</th>
+                                    <th data-field="prediction">prediction<th>
+                                </tr>
+                                </thead>
+                            </table>
+                            <table id="table-segmentation" class="table">
+                                <thead>
+                                <tr>
+                                    <th data-field="id">id</th>
+                                    <th data-field="lat">lat</th>
+                                    <th data-field="lng">lng</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -55,6 +83,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <!-- Latest compiled JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.js"></script>
     <script
       src='https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=initGoogleMap&libraries=places&v=weekly'
       async
