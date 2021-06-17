@@ -98,10 +98,8 @@ class Segmentation:
             images[i, ...] = image
             i = i+1
         predicted = (self.model.predict(images))
+        predicted = tf.where(predicted < 0.5, 0, 1).numpy()
         for i in range(0, len(predicted)):
-            predicted[i] = tf.where(predicted[i] < 0.5, 0, 1)
-            # tiles[i]["predicted"] = predicted[i]
-
             im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height))
             im.save(f'{self.segmentation_image_folder}/image_{i}.png')
             tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{i}.png'
