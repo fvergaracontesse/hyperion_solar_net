@@ -128,7 +128,6 @@ def get_objects():
     # empty results
     results = []
     # create a map provider object
-    print("GOOGLE API KEY", google_api_key)
     map_object = GoogleMap(google_api_key)
 
     # divide map into tiles
