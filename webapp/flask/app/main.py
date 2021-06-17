@@ -123,7 +123,7 @@ def get_objects():
     print(" zoom:", zoom)
 
     # cropping
-    crop_tiles = True
+    crop_tiles = False
 
     # empty results
     results = []
@@ -163,15 +163,18 @@ def get_objects():
     session['metadata'] = meta
     print(" asynchronously retrieved", len(tiles), "files")
 
-    picHeight = 600 #Resulting image height in pixels (x2 if scale parameter is set to 2)
-    picWidth = 600
+    # we create tiles at zoom=21, so factor the size by the current zoom
+    zoom_factor = 2**21 / 2**zoom
+    picHeight = 600/zoom_factor #Resulting image height in pixels (x2 if scale parameter is set to 2)
+    picWidth = 600/zoom_factor
 
     xScale = math.pow(2, zoom) / (picWidth/256)
     yScale = math.pow(2, zoom) / (picHeight/256)
 
     for i, tile in enumerate(tiles):
         tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
-        tile['bounds'] = ts_imgutil.getImageBounds(256, 256, xScale, yScale, tile['lat'], tile['lng'])
+        tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
+        print("Tile bounds:", tile['bounds'])
 
     if type == 'tiles':
         print(" returning number of tiles")

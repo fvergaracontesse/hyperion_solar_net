@@ -12,6 +12,7 @@ from PIL import Image
 import cv2
 from json import JSONEncoder
 import json
+import math
 
 sm.set_framework('tf.keras')
 
@@ -74,14 +75,15 @@ class Segmentation:
     def __init__(self, models_folder='models', model_en='b7'):
         # load pre-trained EfficientNet model
         # model = Unet(backbone_name = 'efficientnetb7', encoder_weights='imagenet', encoder_freeze = False)
-        #self.model = keras.models.load_model(f'{models_folder}/unet_solar_segmentation_model.h5', custom_objects={'iou_score': IOUScore(threshold=0.5), 'f1-score': sm.metrics.FScore(threshold=0.5)})
-        self.model = keras.models.load_model(f'{models_folder}/unet_solar_segmentation_model_size512_jaccardloss_iou87.h5', custom_objects={'iou_score': IOUScore(threshold=0.5),
-                                   'f1-score': sm.metrics.FScore(threshold=0.5),
-                                   'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss})
+        self.model = keras.models.load_model(f'{models_folder}/unet_solar_segmentation_model.h5',
+                                                custom_objects={'iou_score': IOUScore(threshold=0.5),
+                                                'f1-score': sm.metrics.FScore(threshold=0.5),
+                                                'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss
+                                                })
 
         self.model_en = model_en
-        self.image_width = 416
-        self.image_height = 416
+        self.image_width = 512
+        self.image_height = 512
         self.batch_size = 20
         self.segmentation_image_folder = 'img/segmentation'
 
@@ -98,8 +100,7 @@ class Segmentation:
         predicted = (self.model.predict(images))
         predicted = tf.where(predicted < 0.5, 0, 1).numpy()
         for i in range(0, len(predicted)):
-            # tiles[i]["predicted"] = predicted[i]
-            im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height)).resize((600, 600))
+            im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height))
             im.save(f'{self.segmentation_image_folder}/image_{i}.png')
             tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{i}.png'
         return tiles

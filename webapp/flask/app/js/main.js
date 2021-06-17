@@ -182,8 +182,7 @@ function getObjects(type) {
                     strokeColor: "#FF0000",
                     strokeOpacity: 0.8,
                     strokeWeight: 2,
-                    fillColor: "#FF0000",
-                    fillOpacity: 0,
+                    fillOpacity: 0.0,
                     map: currentMap.map,
                     bounds: bounds
               });
@@ -213,15 +212,25 @@ function getObjects(type) {
             $("#results").replaceWith("Classification completed.");
         };
         if (type == 'segmentation') {
-            currentMap.map.setZoom(21);
+            //currentMap.map.setZoom(21);
             for (tile of JSON.parse(data)) {
                 let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+                console.log(imageBounds);
+                const rectangle = new google.maps.Rectangle({
+                  strokeColor: "#00FF00",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillOpacity: 0.0,
+                  map: currentMap.map,
+                  bounds: imageBounds
+                });
+                console.log(tile)
                 spOverlay = new google.maps.GroundOverlay(
                    tile["url"],
                    imageBounds
                 );
                 spOverlay.setMap(currentMap.map)
-                spOverlay.setOpacity(0.5)
+                spOverlay.setOpacity(0.2)
             };
             $("#results").replaceWith("Segmentation completed.");
         };
