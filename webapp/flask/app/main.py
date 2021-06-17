@@ -188,7 +188,10 @@ def get_objects():
         model = Classification()
         tiles = model.predict(tiles)
         tiles = list(filter(lambda x: x["prediction"]==1, tiles))
-        model = Segmentation()
-        tiles = model.predict(tiles)
-        print("TILES", tiles)
+        if len(tiles) > 0:
+            model = Segmentation()
+            tiles = model.predict(tiles)
+            print("TILES", tiles)
+        else:
+            print("NO TILES FOR PREDICTION")
         return json.dumps(tiles)
