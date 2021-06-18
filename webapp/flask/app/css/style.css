@@ -19,6 +19,11 @@ body {
     font-size: 24px;
 }
 
+.logo {
+    width: 60px;
+    height: auto;
+}
+
 #search-box {
     padding-bottom: 10px;
 }
