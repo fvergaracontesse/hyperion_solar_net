@@ -7,7 +7,8 @@
 
 const input = document.getElementById("search");
 const nyc = [-74.00820558171071, 40.71083794970947];
-const honolulu = [-157.80347409796133, 21.325748892984794]
+const honolulu = [-157.80347409796133, 21.325748892984794];
+var map_modified = 0;
 
 function setMyLocation() {
   if (location.protocol === 'https:' && navigator.geolocation) {
@@ -23,6 +24,14 @@ function initGoogleMap() {
 
   // the Google Map is also the default map
   currentMap = googleMap;
+
+  currentMap.map.addListener("center_changed", () => {
+    map_modified = 1;
+  });
+  currentMap.map.addListener("zoom_changed", () => {
+    map_modified = 1;
+  });
+
 }
 
 class SNMap {
@@ -175,8 +184,11 @@ class GoogleMap extends SNMap {
 
 function getObjects(type) {
   //let center = currentMap.getCenterUrl();
+  if (map_modified==1){
+      map_modified = 0;
+      currentMap.removeOverlays();
+  }
   $('#load-spinner').show();
-  currentMap.removeOverlays()
   $('#table-tiles').hide()
   $('#table-classification').hide()
   $('#table-segmentation').hide()
