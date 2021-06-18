@@ -87,7 +87,7 @@ class GoogleMap extends SNMap {
     super();
     // make the map
     this.map = new google.maps.Map(document.getElementById("google-map"), {
-      zoom: 21,
+      zoom: 20,
       mapTypeId: 'satellite',
       fullscreenControl: false,
       streetViewControl: false,
@@ -119,11 +119,7 @@ class GoogleMap extends SNMap {
         if (this.places.length == 0) {
           return;
         }
-        // Clear out the old markers.
-        this.markers.forEach((marker) => {
-          marker.setMap(null);
-        });
-        this.markers = [];
+        map_modified = 1;
         // For each place, get the icon, name and location.
         this.bounds = new google.maps.LatLngBounds();
         this.places.forEach((place) => {
@@ -182,6 +178,10 @@ class GoogleMap extends SNMap {
   }
 }
 
+function removeOverlays() {
+ currentMap.removeOverlays();
+}
+
 function getObjects(type) {
   //let center = currentMap.getCenterUrl();
   if (map_modified==1){
@@ -189,18 +189,6 @@ function getObjects(type) {
       currentMap.removeOverlays();
   }
   $('#load-spinner').show();
-  $('#table-tiles').hide()
-  $('#table-classification').hide()
-  $('#table-segmentation').hide()
-  if (type == 'tiles') {
-      $('#table-tiles').show()
-  }
-  if (type == 'classification') {
-      $('#table-classification').show()
-  }
-  if (type == 'segmentation') {
-      $('#table-segmentation').show()
-  }
   // now get the boundaries ready to ship
   let bounds = currentMap.getBoundsUrl();
   // first, play the request, but get an estimate of the number of tiles
@@ -224,10 +212,25 @@ function getObjects(type) {
                     map: currentMap.map,
                     bounds: bounds
               });
-              currentMap.rectangles.push(rectangle)
-              $('#table-tiles').bootstrapTable({
-                    data: JSON.parse(data)
-              });
+              currentMap.rectangles.push(rectangle);
+              $('#table-results').bootstrapTable('destroy').bootstrapTable({
+                columns: [{
+                        field: 'id',
+                        title: 'id',
+                        visible:true
+                    },
+                    {
+                        field: 'lat',
+                        title: 'Latitude',
+                        visible:true
+                    },
+                    {
+                        field: 'lng',
+                        title: 'Longitude',
+                        visible:true
+                    }],
+                data: JSON.parse(data)
+            });
               $('.loading-wrap').hide();
             };
             //$("#results").replaceWith("Number of tiles:" + Object.keys(JSON.parse(data)).length);
@@ -253,9 +256,29 @@ function getObjects(type) {
                     });
                     currentMap.markers.push(marker);
                 }
-                $('#table-classification').bootstrapTable({
-                      data: JSON.parse(data)
-                });
+                $('#table-results').bootstrapTable('destroy').bootstrapTable({
+                  columns: [{
+                          field: 'id',
+                          title: 'id',
+                          visible:true
+                      },
+                      {
+                          field: 'lat',
+                          title: 'Latitude',
+                          visible:true
+                      },
+                      {
+                          field: 'lng',
+                          title: 'Longitude',
+                          visible:true
+                      },
+                      {
+                          field: 'prediction',
+                          title: 'Prediction',
+                          visible:true
+                      }],
+                  data: JSON.parse(data)
+              });
                 $('.loading-wrap').hide();
             };
         };
@@ -279,9 +302,24 @@ function getObjects(type) {
                 spOverlay.setOpacity(0.2);
                 currentMap.overlays.push(spOverlay);
             };
-            $('#table-segmentation').bootstrapTable({
-                  data: JSON.parse(data)
-            });
+            $('#table-results').bootstrapTable('destroy').bootstrapTable({
+              columns: [{
+                      field: 'id',
+                      title: 'id',
+                      visible:true
+                  },
+                  {
+                      field: 'lat',
+                      title: 'Latitude',
+                      visible:true
+                  },
+                  {
+                      field: 'lng',
+                      title: 'Longitude',
+                      visible:true
+                  }],
+              data: JSON.parse(data)
+          });
             $('.loading-wrap').hide();
         };
         $('#load-spinner').hide();

@@ -10,71 +10,45 @@
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   </head>
   <body>
-    <nav class="navbar fixed-top navbar-light site-navbar">
-        <div class="container-fluid">
-          <span class="navbar-brand mb-0 h1 site-logo">Hyperion Solar Net</span>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">Hyperion Solar Net</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <ul class="navbar-nav px-3">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="#">Sign out</a>
+            </li>
+        </ul>
+    </header>
+    <div class="container-fluid main">
+        <div class="row g-0">
+            <div class="col-sm-12">
+                <div class="search"> <input type="text" id="search" class="search-input" placeholder="Search..." name=""> <a href="#" class="search-icon"> <i class="fa fa-search"></i> </a> </div>
+                <div class="button-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("tiles")'>Display Tiles</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removeOverlays()'>Remove overlays</button>
+                </div>
+            </div>
         </div>
-    </nav>
-    <div class="container main-container">
-
-        <div class="row">
+        <div class="row g-0 h-100">
+            <div class="col-sm-4 results h-100">
+                <div id="load-spinner" class="spinner-border" role="status">
+                    <span class="sr-only" aria-hidden="true">Loading...</span>
+                </div>
+                <div id="results">
+                    <table id="table-results" class="table">
+                    </table>
+                </div>
+            </div>
             <div class="col-sm-8">
-                <div class="card card-main">
-                  <div class="card-body">
-                      <div class="search"> <input type="text" id="search" class="search-input" placeholder="Search..." name=""> <a href="#" class="search-icon"> <i class="fa fa-search"></i> </a> </div>
-                      <div id="google-map"></div>
-                  </div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="card card-main">
-                  <div class="card-body">
-                    <div class="row">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-primary" onclick='getObjects("tiles")'>Display Tiles</button>
-                            <button type="button" class="btn btn-primary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
-                            <button type="button" class="btn btn-primary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div id="load-spinner" class="spinner-border" role="status">
-                            <span class="sr-only" aria-hidden="true">Loading...</span>
-                        </div>
-                        <div id="results">
-                            <table id="table-tiles" class="table">
-                                <thead>
-                                <tr>
-                                    <th data-field="id">id</th>
-                                    <th data-field="lat">lat</th>
-                                    <th data-field="lng">lng</th>
-                                </tr>
-                                </thead>
-                            </table>
-                            <table id="table-classification" class="table">
-                                <thead>
-                                <tr>
-                                    <th data-field="id">id</th>
-                                    <th data-field="lat">lat</th>
-                                    <th data-field="lng">lng</th>
-                                    <th data-field="prediction">prediction<th>
-                                </tr>
-                                </thead>
-                            </table>
-                            <table id="table-segmentation" class="table">
-                                <thead>
-                                <tr>
-                                    <th data-field="id">id</th>
-                                    <th data-field="lat">lat</th>
-                                    <th data-field="lng">lng</th>
-                                </tr>
-                                </thead>
-                            </table>
-                        </div>
-                    </div>
-                  </div>
-                </div>
+                <div id="google-map"></div>
             </div>
         </div>
+
+      </div>
     </div>
 
     <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
