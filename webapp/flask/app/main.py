@@ -190,7 +190,8 @@ def get_objects():
         tiles = list(filter(lambda x: x["prediction"]==1, tiles))
         if len(tiles) > 0:
             model = Segmentation()
-            tiles = model.predict(tiles)
+            # our tiles for prediction are at zoom 21
+            tiles = model.predict(tiles, 21)
             print("TILES", tiles)
         else:
             print("NO TILES FOR PREDICTION")

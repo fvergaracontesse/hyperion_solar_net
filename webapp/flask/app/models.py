@@ -88,8 +88,39 @@ class Segmentation:
         self.batch_size = 20
         self.segmentation_image_folder = 'img/segmentation'
 
+    def get_panels_area_and_count(self, latitude, zoom, matrix):
+        '''
+        :type latitude: int
+        :type zoom: int
+        :type matrix: List[int]
+        :rtype panel_area: int
+        :rtype panel_count: int
+        function input is the location latitude, zoom and a matrix of 0 and 1
+        integers denoting if pixel contains solar panel. function outputs the total
+        solar panel area and the solar panel count in the image
+        '''
+        # initialize as np array and count non-zeros equal to 1
+        np_matrix = np.array(matrix)
+        one_count = np.count_nonzero(np_matrix == 1)
+        # calculate meters per pixel per Google calculations
+        meters_per_pixel = 156543.03392 * math.cos(latitude * math.pi / 180) / math.pow(2, zoom)
+        # convert to feet per pixel
+        feet_per_pixel = 3.28084 * meters_per_pixel
+        # calculate area per pixel in feet^2
+        area_per_pixel = feet_per_pixel * feet_per_pixel
+        # calculate the total area of solar panels in image
+        panel_area = one_count * area_per_pixel
 
-    def predict(self, tiles):
+        # initialize the standard panel area (residential = 17.6, commercial = 20.85)
+        # Solar panels are roughly 5 feet long and 3 feet wide, with some small variation by manufacturer
+        # from https://news.energysage.com/average-solar-panel-size-weight/
+        area_per_panel = 17.6
+        # calculate the number of panels rounding to whole number
+        panel_count = round((panel_area / area_per_panel),0)
+
+        return(panel_area, panel_count)
+
+    def predict(self, tiles, zoom):
         images = np.empty((len(tiles), self.image_width, self.image_height, 3), dtype=np.float32)
         i = 0
         for tile in tiles:
@@ -100,9 +131,13 @@ class Segmentation:
             i = i+1
         predicted = (self.model.predict(images))
         predicted = tf.where(predicted < tf.cast(0.5, tf.float64), 0, 1).numpy()
+
         for i in range(0, len(predicted)):
+            predicted_matrix = predicted[i]
             im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height))
             image_name = uuid.uuid4().hex
             im.save(f'{self.segmentation_image_folder}/image_{image_name}.png')
             tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{image_name}.png'
+            tiles[i]['panels_area'], tiles[i]['panels_count'] = self.get_panels_area_and_count(tiles[i]['lat'], zoom, predicted_matrix)
+
         return tiles
