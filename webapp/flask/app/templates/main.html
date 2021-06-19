@@ -12,7 +12,7 @@
   <body>
     <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
         <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">
-            <img class="logo" src="/img/logo_2.svg" /> Hyperion Solar Net
+            <img class="logo" src="/img/logo_2.svg" /> HyperionSolarNet
         </a>
         <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -31,23 +31,20 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("tiles")'>Display Tiles</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removeOverlays()'>Remove overlays</button>
                 </div>
             </div>
         </div>
         <div class="row g-0 h-100">
             <div class="col-sm-4 results h-100">
-                <div class="results">
-                    <div id="load-spinner" class="spinner-border" role="status">
-                        <span class="sr-only" aria-hidden="true">Loading...</span>
-                    </div>
-                    <div id="results">
-                        <table id="table-results" class="table">
-                        </table>
-                    </div>
+                <div id="load-spinner" class="spinner-border" role="status">
+                    <span class="sr-only" aria-hidden="true">Loading...</span>
+                </div>
+                <div id="results">
+                    <table id="table-results" class="table">
+                    </table>
                 </div>
             </div>
-            <div class="col-sm-8 h-100">
+            <div class="col-sm-8">
                 <div id="google-map"></div>
             </div>
         </div>
