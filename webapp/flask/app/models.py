@@ -13,6 +13,7 @@ import cv2
 from json import JSONEncoder
 import json
 import math
+import uuid
 
 sm.set_framework('tf.keras')
 
@@ -98,9 +99,10 @@ class Segmentation:
             images[i, ...] = image
             i = i+1
         predicted = (self.model.predict(images))
-        predicted = tf.where(predicted < 0.5, 0, 1).numpy()
+        predicted = tf.where(predicted < tf.cast(0.5, tf.float64), 0, 1).numpy()
         for i in range(0, len(predicted)):
             im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height))
-            im.save(f'{self.segmentation_image_folder}/image_{i}.png')
-            tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{i}.png'
+            image_name = uuid.uuid4().hex
+            im.save(f'{self.segmentation_image_folder}/image_{image_name}.png')
+            tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{image_name}.png'
         return tiles

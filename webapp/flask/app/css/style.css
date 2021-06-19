@@ -56,18 +56,8 @@ body {
 }
 
 #google-map {
-    min-height: 500px;
-    min-width: 500px;
-    height: 100%;
-}
-
-.sidebar-sticky {
-  position: relative;
-  top: 0;
-  height: calc(100vh - 48px);
-  padding-top: .5rem;
-  overflow-x: hidden;
-  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    min-height: 600px;
+    max-width: 1200px;
 }
 
 /* Optional: Makes the sample page fill the window. */
@@ -76,6 +66,10 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+.results {
+    max-height: 600px;
 }
 
 #description {

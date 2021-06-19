@@ -106,9 +106,9 @@ class GoogleMap extends SNMap {
       this.searchBox.setBounds(this.map.getBounds());
     });
 
-    this.markers = []
-    this.rectangles = [];
-    this.overlays = [];
+    this.predictions_markers = []
+    this.predictions_rectangles = [];
+    this.predictions_overlays = [];
 
 
     // Listen for the event fired when the user selects a prediction and retrieve
@@ -166,20 +166,21 @@ class GoogleMap extends SNMap {
     return [sw.lng(), ne.lat(), ne.lng(), sw.lat()];
   }
   removeOverlays(){
-      while(this.markers[0]){
-          this.markers.pop().setMap(null);
+      while(this.predictions_markers[0]){
+          this.predictions_markers.pop().setMap(null);
       }
-      while(this.rectangles[0]){
-          this.rectangles.pop().setMap(null);
+      while(this.predictions_rectangles[0]){
+          this.predictions_rectangles.pop().setMap(null);
       }
-      while(this.overlays[0]){
-          this.overlays.pop().setMap(null);
+      while(this.predictions_overlays[0]){
+          this.predictions_overlays.pop().setMap(null);
       }
   }
 }
 
 function removeOverlays() {
- currentMap.removeOverlays();
+    map_modified = 0;
+    currentMap.removeOverlays();
 }
 
 function getObjects(type) {
@@ -212,7 +213,7 @@ function getObjects(type) {
                     map: currentMap.map,
                     bounds: bounds
               });
-              currentMap.rectangles.push(rectangle);
+              currentMap.predictions_rectangles.push(rectangle);
               $('#table-results').bootstrapTable('destroy').bootstrapTable({
                 columns: [{
                         field: 'id',
@@ -249,12 +250,12 @@ function getObjects(type) {
                         map: currentMap.map,
                         bounds: bounds
                     });
-                    currentMap.rectangles.push(rectangle)
+                    currentMap.predictions_rectangles.push(rectangle)
                     marker = new google.maps.Marker({
                       position: myLatLng,
                       map: currentMap.map
                     });
-                    currentMap.markers.push(marker);
+                    currentMap.predictions_markers.push(marker);
                 }
                 $('#table-results').bootstrapTable('destroy').bootstrapTable({
                   columns: [{
@@ -293,14 +294,15 @@ function getObjects(type) {
                   map: currentMap.map,
                   bounds: imageBounds
                 });
-                currentMap.rectangles.push(rectangle);
+                currentMap.predictions_rectangles.push(rectangle);
+                console.log(tile["url"])
                 spOverlay = new google.maps.GroundOverlay(
                    tile["url"],
                    imageBounds
                 );
                 spOverlay.setMap(currentMap.map);
                 spOverlay.setOpacity(0.2);
-                currentMap.overlays.push(spOverlay);
+                currentMap.predictions_overlays.push(spOverlay);
             };
             $('#table-results').bootstrapTable('destroy').bootstrapTable({
               columns: [{
