@@ -133,7 +133,8 @@ class Segmentation:
         predicted = tf.where(predicted < tf.cast(0.5, tf.float64), 0, 1).numpy()
 
         for i in range(0, len(predicted)):
-            predicted_matrix = predicted[i]
+            predicted_matrix = np.array(Image.fromarray(predicted[i].reshape(self.image_width, self.image_height)).resize((600, 600)))
+
             im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height))
             image_name = uuid.uuid4().hex
             im.save(f'{self.segmentation_image_folder}/image_{image_name}.png')

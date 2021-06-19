@@ -301,7 +301,7 @@ function getObjects(type) {
                    imageBounds
                 );
                 spOverlay.setMap(currentMap.map);
-                spOverlay.setOpacity(0.2);
+                spOverlay.setOpacity(0.3);
                 currentMap.predictions_overlays.push(spOverlay);
             };
             $('#table-results').bootstrapTable('destroy').bootstrapTable({
