@@ -14,6 +14,7 @@ from json import JSONEncoder
 import json
 import math
 import uuid
+from scipy.ndimage import zoom as zm
 
 sm.set_framework('tf.keras')
 
@@ -117,7 +118,7 @@ class Segmentation:
         area_per_panel = 17.6
         # calculate the number of panels rounding to whole number
         panel_count = round((panel_area / area_per_panel),0)
-
+        panel_area = round(panel_area, 2)
         return(panel_area, panel_count)
 
     def predict(self, tiles, zoom):
@@ -135,7 +136,18 @@ class Segmentation:
         for i in range(0, len(predicted)):
             predicted_matrix = np.array(Image.fromarray(predicted[i].reshape(self.image_width, self.image_height)).resize((600, 600)))
 
-            im = Image.fromarray((predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height))
+            # convert mask to a 4D image
+            array=(predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height,1)
+            array = zm(array, (1, 1, 4))
+            # get row column value of pixels having value 1
+            row_col = np.where(array>0)
+            if len(row_col) > 0:
+                im_coords = list(zip(row_col[0],row_col[1]))
+                for cord in im_coords:
+                    # pixels of value 1 are set to red color
+                    array[cord] = [255, 0, 0, 255]
+            im = Image.fromarray(array)
+
             image_name = uuid.uuid4().hex
             im.save(f'{self.segmentation_image_folder}/image_{image_name}.png')
             tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{image_name}.png'
