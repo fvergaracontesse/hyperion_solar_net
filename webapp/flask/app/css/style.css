@@ -24,6 +24,15 @@ body {
     height: auto;
 }
 
+.header {
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+#results {
+    margin-left: 10px;
+}
+
 #search-box {
     padding-bottom: 10px;
 }
