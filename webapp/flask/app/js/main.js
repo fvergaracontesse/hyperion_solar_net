@@ -320,6 +320,16 @@ function getObjects(type) {
                       field: 'lng',
                       title: 'Longitude',
                       visible:true
+                  },
+                  {
+                      field: 'panels_area',
+                      title: 'Area (sqft)',
+                      visible:true
+                  },
+                  {
+                      field: 'panels_count',
+                      title: 'Count',
+                      visible:true
                   }],
               data: JSON.parse(data)
           });
