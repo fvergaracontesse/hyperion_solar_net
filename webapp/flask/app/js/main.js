@@ -109,6 +109,7 @@ class GoogleMap extends SNMap {
     this.predictions_markers = []
     this.predictions_rectangles = [];
     this.predictions_overlays = [];
+    this.markers = [];
 
 
     // Listen for the event fired when the user selects a prediction and retrieve
