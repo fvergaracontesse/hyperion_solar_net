@@ -25,11 +25,19 @@ function initGoogleMap() {
   // the Google Map is also the default map
   currentMap = googleMap;
 
+  $("#map-options-zoom").html("Zoom size: " + currentMap.map.getZoom());
+  $("#map-options-center").html("Center: " + "(" + currentMap.map.getCenter().lat() + ", " + currentMap.map.getCenter().lng() + ")");
+
   currentMap.map.addListener("center_changed", () => {
     map_modified = 1;
+    $("#map-options-zoom").html("Zoom size: " + currentMap.map.getZoom());
+    $("#map-options-center").html("Center: " + "(" + currentMap.map.getCenter().lat() + ", " + currentMap.map.getCenter().lng() + ")");
+    //$("#map-options-center").replaceWith("Zoom size: " + currentMap.map.getZoom());
   });
   currentMap.map.addListener("zoom_changed", () => {
     map_modified = 1;
+    $("#map-options-zoom").html("Zoom size: " + currentMap.map.getZoom());
+    $("#map-options-center").html("Center: " + "(" + currentMap.map.getCenter().lat() + ", " + currentMap.map.getCenter().lng() + ")");
   });
 
 }

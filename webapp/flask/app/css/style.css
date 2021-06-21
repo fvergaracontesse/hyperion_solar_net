@@ -181,6 +181,10 @@ a:link {
     display: none;
 }
 
+.map-controls{
+    margin: 10px;
+}
+
 #table-tiles {
     display: none;
 }
