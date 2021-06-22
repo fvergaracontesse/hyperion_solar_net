@@ -248,24 +248,29 @@ function getObjects(type) {
         if (type == 'classification') {
             for (tile of JSON.parse(data)) {
                 let myLatLng = {lat:tile["lat"], lng:tile["lng"]};
+                var stroke_color = "#FF0000";
+                var z_index = 1;
                 if (tile["prediction"]==1) {
-                    let bounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
-                    const rectangle = new google.maps.Rectangle({
-                        strokeColor: "#FF0000",
-                        strokeOpacity: 0.8,
-                        strokeWeight: 2,
-                        fillColor: "#FF0000",
-                        fillOpacity: 0,
-                        map: currentMap.map,
-                        bounds: bounds
-                    });
-                    currentMap.predictions_rectangles.push(rectangle)
+                    stroke_color = "#00FF00";
+                    var z_index = 2;
                     marker = new google.maps.Marker({
                       position: myLatLng,
                       map: currentMap.map
                     });
                     currentMap.predictions_markers.push(marker);
                 }
+                let bounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+                const rectangle = new google.maps.Rectangle({
+                    strokeColor: stroke_color,
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#FF0000",
+                    fillOpacity: 0,
+                    map: currentMap.map,
+                    bounds: bounds,
+                    zIndex: z_index
+                });
+                currentMap.predictions_rectangles.push(rectangle)
                 $('#table-results').bootstrapTable('destroy').bootstrapTable({
                   columns: [{
                           field: 'id',
@@ -295,13 +300,20 @@ function getObjects(type) {
         if (type == 'segmentation') {
             for (tile of JSON.parse(data)) {
                 let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+                var stroke_color = "#FF0000";
+                var z_index = 1;
+                if (tile["prediction"] == 1){
+                    stroke_color = "#00FF00";
+                    z_index = 2;
+                }
                 const rectangle = new google.maps.Rectangle({
-                  strokeColor: "#00FF00",
+                  strokeColor: stroke_color,
                   strokeOpacity: 0.8,
                   strokeWeight: 2,
                   fillOpacity: 0.0,
                   map: currentMap.map,
-                  bounds: imageBounds
+                  bounds: imageBounds,
+                  zIndex: z_index
                 });
                 currentMap.predictions_rectangles.push(rectangle);
                 console.log(tile["url"])

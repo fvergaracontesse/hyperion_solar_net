@@ -187,12 +187,14 @@ def get_objects():
         print(" returning segmentation prediction")
         model = Classification()
         tiles = model.predict(tiles)
-        tiles = list(filter(lambda x: x["prediction"]==1, tiles))
-        if len(tiles) > 0:
+        tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
+        if len(tiles_pred) > 0:
             model = Segmentation()
             # our tiles for prediction are at zoom 21
-            tiles = model.predict(tiles, 21)
-            print("TILES", tiles)
+            result_tiles = model.predict(tiles_pred, 21)
+            for i, tile in enumerate(tiles):
+                if tile["id"] in result_tiles:
+                    tiles[i] = result_tiles[tile["id"]]
         else:
             print("NO TILES FOR PREDICTION")
         return json.dumps(tiles)

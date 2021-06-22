@@ -152,5 +152,7 @@ class Segmentation:
             im.save(f'{self.segmentation_image_folder}/image_{image_name}.png')
             tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{image_name}.png'
             tiles[i]['panels_area'], tiles[i]['panels_count'] = self.get_panels_area_and_count(tiles[i]['lat'], zoom, predicted_matrix)
-
-        return tiles
+        result_tiles = {}
+        for tile in tiles:
+            result_tiles[tile["id"]] = tile
+        return result_tiles
