@@ -58,6 +58,12 @@ body {
     overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
 
+.places_tiles {
+    box-shadow: -2px 2px 5px 0 rgb(0 0 0 / 40%);
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
 .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
     border-radius: 0px;
     border: 1px solid rgb(209, 209, 213);

@@ -192,6 +192,11 @@ function removeOverlays() {
     currentMap.removeOverlays();
 }
 
+function goToPlace(lng, lat) {
+    c = [lng, lat];
+    currentMap.setCenter(c);
+}
+
 function getObjects(type) {
   //let center = currentMap.getCenterUrl();
   if (map_modified==1){

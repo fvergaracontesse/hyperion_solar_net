@@ -40,5 +40,4 @@ class GoogleMap(Map):
                "&format=" + fmt + \
                "&maptype=" + maptype + \
                "&key=" + self.key
-        print("URL", url)
         return url

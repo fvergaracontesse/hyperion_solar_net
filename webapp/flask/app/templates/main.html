@@ -32,6 +32,7 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removeOverlays()'>Remove Overlays</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='GetPlaceTiles()'>Get place tiles</button>
                 </div>
             </div>
         </div>
@@ -45,6 +46,27 @@
                       <li><div id="map-options-zoom"></div></li>
                       <li><div id="map-options-center"></div></li>
                   </ul>
+              </div>
+              <div class="places_tiles">
+                  <div class="header">
+                        <h3> Places tiles </h1>
+                  </div>
+                  <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">State</th>
+                          <th scope="col">Inference</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th scope="row">1</th>
+                          <td>Texas</td>
+                          <td><a class="place_inf" href="#" onclick="goToPlace(-100.07684249974044, 31.320283869049657)">Go</a></td>
+                        </tr>
+                      </tbody>
+                </table>
               </div>
               <div class="results">
                   <div id="load-spinner" class="spinner-border" role="status">

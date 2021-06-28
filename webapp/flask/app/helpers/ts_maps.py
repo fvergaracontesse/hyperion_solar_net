@@ -79,8 +79,11 @@ class Map:
     # returns a list of centers for zoom 19 scale 2 images
     #
 
-    def make_tiles(self, bounds, overlap_percent=0, crop_tiles=False):
-        south, west, north, east = [float(x) for x in bounds.split(",")]
+    def make_tiles(self, bounds, overlap_percent=0, crop_tiles=False, normal=True):
+        if normal:
+            south, west, north, east = [float(x) for x in bounds.split(",")]
+        else:
+            west, south, east, north  = list(bounds)
 
         # width and height of total map
         w = abs(west-east)

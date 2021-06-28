@@ -15,6 +15,7 @@ import json
 import math
 import uuid
 from scipy.ndimage import zoom as zm
+from helpers.sn_helpers import chunks
 
 sm.set_framework('tf.keras')
 
@@ -56,13 +57,19 @@ class Classification:
         self.image_size = self.params_dict[self.model_en]
         self.batch_size = 20
 
-    def predict(self, tiles):
+    def predict(self, tiles, normal=True):
         # predicting images
-        images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
+        if normal:
+            images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
+        else:
+            images = list(map(lambda x: x["image_to_arr"], tiles))
         images = np.vstack(images)
-        predictions = self.model.predict(images).flatten()
-        predictions = tf.nn.sigmoid(predictions)
-        predictions = tf.where(predictions < 0.5, 0, 1).numpy().tolist()
+        images_batches = chunks(images, 2)
+        predictions = []
+        for images_batch in images_batches:
+            predictions_tmp = self.model.predict(images_batch).flatten()
+            predictions_tmp = tf.nn.sigmoid(predictions_tmp)
+            predictions.expand(tf.where(predictions_tmp < 0.5, 0, 1).numpy().tolist())
         for tile in tiles:
             #image_arr = np.expand_dims(img_to_array(load_img(tile['filename'], grayscale=False)), axis=0)
             #prediction = self.model.predict(image_arr).flatten()

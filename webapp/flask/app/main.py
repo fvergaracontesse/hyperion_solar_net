@@ -10,6 +10,7 @@
 # import basic functionality
 import helpers.ts_imgutil as ts_imgutil
 from helpers.ts_gmaps import GoogleMap
+from helpers.sn_helpers import check_tile_center_against_bounds
 from models import Classification, Segmentation
 import helpers.ts_maps as ts_maps
 from flask import Flask, render_template, send_from_directory, request, session, Response
@@ -132,6 +133,7 @@ def get_objects():
 
     # divide map into tiles
     tiles, nx, ny, meters, h, w = map_object.make_tiles(bounds, crop_tiles=crop_tiles)
+    tiles_overlap, nx_overlap, ny_overlap, meters_overlap, h_overlap, w_overlap = map_object.make_tiles(bounds, overlap_percent=2, crop_tiles=crop_tiles)
     print(f" {len(tiles)} tiles, {nx} x {ny}, {meters} x {meters} m")
     # print(" Tile centers:")
     # for c in tiles:
@@ -140,6 +142,12 @@ def get_objects():
     tiles = [t for t in tiles if ts_maps.check_tile_against_bounds(t, bounds)]
     for i, tile in enumerate(tiles):
         tile['id'] = i
+
+
+    tiles_overlap = [t for t in tiles_overlap if ts_maps.check_tile_against_bounds(t, bounds)]
+    for i, tile_overlap in enumerate(tiles_overlap):
+        tile_overlap['id'] = i
+
     print(" tiles left after viewport and polygon filter:", len(tiles))
 
     if "tmpdirname" in session:
@@ -162,6 +170,10 @@ def get_objects():
     session['metadata'] = meta
     print(" asynchronously retrieved", len(tiles), "files")
 
+    meta_overlap = map_object.get_sat_maps(tiles_overlap, loop, tmpdirname, tmpfilename+"_overlap_")
+    session['metadata_overlay'] = meta_overlap
+    print(" asynchronously retrieved", len(tiles), "files")
+
     # we create tiles at zoom=21, so factor the size by the current zoom
     zoom_factor = 2**21 / 2**zoom
     picHeight = 600/zoom_factor #Resulting image height in pixels (x2 if scale parameter is set to 2)
@@ -173,7 +185,10 @@ def get_objects():
     for i, tile in enumerate(tiles):
         tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
         tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
-        print("Tile bounds:", tile['bounds'])
+
+    for i, tile_overlap in enumerate(tiles_overlap):
+        tile_overlap['filename'] = tmpdirname+"/"+tmpfilename+"_overlap_"+str(i)+".jpg"
+        tile_overlap['bounds'] = ts_imgutil.getImageBounds(tile_overlap['w'], tile_overlap['h'], xScale, yScale, tile_overlap['lat'], tile_overlap['lng'])
 
     if type == 'tiles':
         print(" returning number of tiles")
@@ -181,12 +196,24 @@ def get_objects():
     elif type == 'classification':
         print(" returning classification prediction")
         model = Classification()
-        tiles = model.predict(tiles)
+        # tiles = model.predict(tiles)
+        tiles_overlap = model.predict(tiles_overlap)
+        for tile in tiles:
+            for tile_overlap in tiles_overlap:
+                check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
+                if check:
+                    tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
         return json.dumps(tiles)
     elif type == 'segmentation':
         print(" returning segmentation prediction")
         model = Classification()
-        tiles = model.predict(tiles)
+        # tiles = model.predict(tiles)
+        tiles_overlap = model.predict(tiles_overlap)
+        for tile in tiles:
+            for tile_overlap in tiles_overlap:
+                check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
+                if check:
+                    tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
         tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
         if len(tiles_pred) > 0:
             model = Segmentation()
