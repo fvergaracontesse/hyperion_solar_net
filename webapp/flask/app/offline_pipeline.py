@@ -22,7 +22,7 @@ from models import Classification, Segmentation
 
 load_dotenv()
 
-place = "hayward"
+place = "berkeley"
 coordinate_file = f"coordinates/coord_{place}"
 image_directory = f"data/images/{place}"
 google_api_key = os.environ["GOOGLE_MAP_API_KEY"]
@@ -50,19 +50,19 @@ for tile in tiles_poly:
     if response.status_code == 200:
         tile["image_status"] = True
         tile["file_name"] = place + "/" + tile["hash_id"] + ".jpg"
-        tile["image_to_arr"] = np.expand_dims(img_to_array(Image.open(BytesIO(response.content))), axis=0)
-        i += 1
-        print(i, tile["url"])
+        content = response.content
+        tile["image_to_arr"] = np.expand_dims(img_to_array(Image.open(BytesIO(content))), axis=0)
+        upload_file(tile["file_name"], bucket, content)
     else:
         print(response.status_code)
         print("No", tile["url"])
         tile["image_status"] = False
-    if i == 5:
-        tiles_poly = list(filter(lambda x: x["image_status"] is True), tiles_poly)
-        break
+    i += 1
+    print(i)
+save_pickle_file("data/"+coordinate_file + "_img", tiles_poly)
 
-model = Classification()
-tiles = model.predict(tiles_poly)
+    # model = Classification()
+    #tiles = model.predict(tiles_poly)
 
 
 

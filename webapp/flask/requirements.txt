@@ -13,3 +13,4 @@ waitress==2.0.0
 tensorflow==2.4.1
 numpy==1.19.5
 opencv-python-headless==4.5.2.54
+boto3==1.17.101
