@@ -40,26 +40,29 @@ if not os.path.isfile("data/"+coordinate_file):
 else:
     tiles_poly = load_pickle_file("data/"+coordinate_file)
 
-i = 0
-for tile in tiles_poly:
-    url = map_object.get_url(tile)
-    signed_url = sign_url(url, google_api_secret)
-    tile["url"] = signed_url
-    tile["hash_id"] = uuid.uuid4().hex
-    response = requests.get(tile["url"])
-    if response.status_code == 200:
-        tile["image_status"] = True
-        tile["file_name"] = place + "/" + tile["hash_id"] + ".jpg"
-        content = response.content
-        tile["image_to_arr"] = np.expand_dims(img_to_array(Image.open(BytesIO(content))), axis=0)
-        upload_file(tile["file_name"], bucket, content)
-    else:
-        print(response.status_code)
-        print("No", tile["url"])
-        tile["image_status"] = False
-    i += 1
-    print(i)
-save_pickle_file("data/"+coordinate_file + "_img", tiles_poly)
+if not os.path.isfile("data/"+coordinate_file + "_img"):
+    i = 0
+    for tile in tiles_poly:
+        url = map_object.get_url(tile)
+        signed_url = sign_url(url, google_api_secret)
+        tile["url"] = signed_url
+        tile["hash_id"] = uuid.uuid4().hex
+        response = requests.get(tile["url"])
+        if response.status_code == 200:
+            tile["image_status"] = True
+            tile["file_name"] = place + "/" + tile["hash_id"] + ".jpg"
+            content = response.content
+            tile["image_to_arr"] = np.expand_dims(img_to_array(Image.open(BytesIO(content))), axis=0)
+            upload_file(tile["file_name"], bucket, content)
+        else:
+            print(response.status_code)
+            print("No", tile["url"])
+            tile["image_status"] = False
+        i += 1
+        print(i)
+    save_pickle_file("data/"+coordinate_file + "_img", tiles_poly)
+else:
+    print("DONE FILES")
 
     # model = Classification()
     #tiles = model.predict(tiles_poly)
