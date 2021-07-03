@@ -20,6 +20,7 @@ from PIL import Image
 from io import BytesIO
 import numpy as np
 from models import Classification, Segmentation
+from datetime import datetime
 
 load_dotenv()
 
@@ -64,14 +65,17 @@ if not os.path.isfile("data/"+coordinate_file + "_img"):
     save_pickle_file("data/"+coordinate_file + "_img", tiles_poly)
 
 if not os.path.isfile("data/"+coordinate_file + "_classification"):
+    print("START CLASSIFICATION:", datetime.now())
     model = Classification()
     classification_tiles = []
     tiles_poly = load_pickle_file("data/"+coordinate_file + "_img")
-    tiles_poly_chunks = chunks(tiles_poly, 100)
+    tiles_poly_chunks = chunks(tiles_poly, 20)
     for chunk in tiles_poly_chunks:
         classification_tiles.extend(model.predict(chunk, True))
+        print("Iteration:", datetime.now())
     save_pickle_file("data/"+coordinate_file + "_classification", classification_tiles)
 
 
-
+tiles_classification = load_pickle_file("data/"+coordinate_file + "_classification")
+print(list(filter(lambda x: x["prediction"] == 1, tiles_classification)))
 # map_object.get_sat_maps(tiles_poly, loop, image_directory, uuid.uuid4().hex)
