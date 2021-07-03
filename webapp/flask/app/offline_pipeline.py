@@ -75,7 +75,6 @@ if not os.path.isfile("data/"+coordinate_file + "_classification"):
         print("Iteration:", datetime.now())
     save_pickle_file("data/"+coordinate_file + "_classification", classification_tiles)
 
-
 tiles_classification = load_pickle_file("data/"+coordinate_file + "_classification")
 print(list(filter(lambda x: x["prediction"] == 1, tiles_classification)))
 # map_object.get_sat_maps(tiles_poly, loop, image_directory, uuid.uuid4().hex)
