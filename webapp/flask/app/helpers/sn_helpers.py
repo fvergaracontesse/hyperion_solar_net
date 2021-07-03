@@ -47,6 +47,19 @@ def get_image_from_s3(path):
     img = Image.open(fileobj['Body'])
     return img
 
+def get_image_stream_from_s3(path):
+    s3client = boto3.client(
+        's3'
+    )
+    bucketname = "solarnet-data"
+    file_to_read = path
+    fileobj = s3client.get_object(
+        Bucket=bucketname,
+        Key=file_to_read
+    )
+    # img = load_img(io.BytesIO(fileobj['Body'].read()))
+    return fileobj['Body'].read()
+
 
 def get_state_tiles(place_json, map_object, activate=True):
     if activate == True:

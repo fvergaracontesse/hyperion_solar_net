@@ -76,6 +76,26 @@ if not os.path.isfile("data/"+coordinate_file + "_classification"):
     save_pickle_file("data/"+coordinate_file + "_classification", classification_tiles)
 
 
-tiles_classification = load_pickle_file("data/"+coordinate_file + "_classification")
-print(list(filter(lambda x: x["prediction"] == 1, tiles_classification)))
+classification_tiles = load_pickle_file("data/"+coordinate_file + "_classification")
+solar_panel_tiles = list(filter(lambda x: x["prediction"] == 1, classification_tiles))
+solar_panel_tiles_chunks = chunks(solar_panel_tiles, 50)
+
+if not os.path.isfile("data/"+coordinate_file + "_segmentation"):
+    segmentation_tiles = {}
+    model = Segmentation()
+    i = 0
+    for chunk in solar_panel_tiles_chunks:
+        result_tiles = model.predict(chunk, 21, True, place)
+        segmentation_tiles.update(result_tiles)
+        if i == 3:
+            break
+        i += 1
+    for i, tile in enumerate(classification_tiles):
+        if tile["id"] in segmentation_tiles:
+            print(segmentation_tiles[tile["id"]])
+            classification_tiles[i] = segmentation_tiles[tile["id"]]
+    save_pickle_file("data/"+coordinate_file + "_segmentation", classification_tiles)
+
+
+
 # map_object.get_sat_maps(tiles_poly, loop, image_directory, uuid.uuid4().hex)

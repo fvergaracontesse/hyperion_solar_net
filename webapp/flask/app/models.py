@@ -17,8 +17,10 @@ import uuid
 from scipy.ndimage import zoom as zm
 from helpers.sn_helpers import (
     chunks,
-    get_image_from_s3
+    get_image_from_s3,
+    get_image_stream_from_s3
 )
+import os
 
 
 sm.set_framework('tf.keras')
@@ -124,23 +126,31 @@ class Segmentation:
         panel_area = round(panel_area, 2)
         return(panel_area, panel_count)
 
-    def predict(self, tiles, zoom):
+    def predict(self, tiles, zoom, fromS3=False, place=None):
         images = np.empty((len(tiles), self.image_width, self.image_height, 3), dtype=np.float32)
         i = 0
+        if place:
+            if not os.path.exists(f'{self.segmentation_image_folder}/{place}'):
+                os.makedirs(f'{self.segmentation_image_folder}/{place}')
+            folder = f'{self.segmentation_image_folder}/{place}'
+        else:
+            folder = f'{self.segmentation_image_folder}'
         for tile in tiles:
-            test_image = cv2.imread(tile['filename'], cv2.IMREAD_COLOR)/255
-            resized = cv2.resize(test_image, (self.image_width, self.image_height))
+            if not fromS3:
+                tmp_image = cv2.imread(tile['filename'], cv2.IMREAD_COLOR)/255
+            else:
+                tmp_image = cv2.imdecode(np.asarray(bytearray(get_image_stream_from_s3(tile["file_name"]))), cv2.IMREAD_COLOR)/255
+            resized = cv2.resize(tmp_image, (self.image_width, self.image_height))
             image = resized.reshape(self.image_width, self.image_height, 3)
             images[i, ...] = image
             i = i+1
-        predicted = (self.model.predict(images))
+        predicted = (self.model.predict_on_batch(images))
         predicted = tf.where(predicted < tf.cast(0.5, tf.float64), 0, 1).numpy()
-
-        for i in range(0, len(predicted)):
-            predicted_matrix = np.array(Image.fromarray(predicted[i].reshape(self.image_width, self.image_height)).resize((600, 600)))
+        for i, prediction in enumerate(predicted):
+            predicted_matrix = np.array(Image.fromarray(prediction.reshape(self.image_width, self.image_height)).resize((600, 600)))
 
             # convert mask to a 4D image
-            array=(predicted[i] * 255).astype(np.uint8).reshape(self.image_width, self.image_height,1)
+            array=(prediction * 255).astype(np.uint8).reshape(self.image_width, self.image_height,1)
             array = zm(array, (1, 1, 4))
             # get row column value of pixels having value 1
             row_col = np.where(array>0)
@@ -152,8 +162,8 @@ class Segmentation:
             im = Image.fromarray(array)
 
             image_name = uuid.uuid4().hex
-            im.save(f'{self.segmentation_image_folder}/image_{image_name}.png')
-            tiles[i]["url"] = f'/{self.segmentation_image_folder}/image_{image_name}.png'
+            im.save(f'{folder}/image_{image_name}.png')
+            tiles[i]["mask_url"] = f'{folder}/image_{image_name}.png'
             tiles[i]['panels_area'], tiles[i]['panels_count'] = self.get_panels_area_and_count(tiles[i]['lat'], zoom, predicted_matrix)
         result_tiles = {}
         for tile in tiles:
