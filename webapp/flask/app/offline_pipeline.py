@@ -4,7 +4,8 @@ from helpers.sn_helpers import (
     save_pickle_file,
     load_pickle_file,
     upload_file,
-    sign_url
+    sign_url,
+    chunks
 )
 from dotenv import load_dotenv
 from helpers.ts_gmaps import GoogleMap
@@ -50,10 +51,10 @@ if not os.path.isfile("data/"+coordinate_file + "_img"):
         tile["url"] = signed_url
         response = requests.get(tile["url"])
         if response.status_code == 200:
-            tile["image_status"] = True
             tile["file_name"] = place + "/" + tile["hash_id"] + ".jpg"
             content = response.content
             upload_file(tile["file_name"], bucket, content)
+            tile["image_status"] = True
         else:
             print(response.status_code)
             print("No", tile["url"])
@@ -61,11 +62,15 @@ if not os.path.isfile("data/"+coordinate_file + "_img"):
         i += 1
         print(i)
     save_pickle_file("data/"+coordinate_file + "_img", tiles_poly)
-else:
-    tiles_poly = load_pickle_file("data/"+coordinate_file + "_img")
 
-    # model = Classification()
-    #tiles = model.predict(tiles_poly)
+if not os.path.isfile("data/"+coordinate_file + "_classification"):
+    model = Classification()
+    classification_tiles = []
+    tiles_poly = load_pickle_file("data/"+coordinate_file + "_img")
+    tiles_poly_chunks = chunks(tiles_poly, 100)
+    for chunk in tiles_poly_chunks:
+        classification_tiles.extend(model.predict(chunk, True))
+    save_pickle_file("data/"+coordinate_file + "_classification", classification_tiles)
 
 
 

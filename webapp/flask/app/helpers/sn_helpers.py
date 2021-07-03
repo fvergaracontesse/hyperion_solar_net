@@ -8,6 +8,9 @@ import hashlib
 import hmac
 import base64
 import urllib.parse as urlparse
+import io
+from tensorflow.keras.preprocessing.image import load_img
+from PIL import Image
 
 def check_tile_center_against_bounds(t, bounds):
     SWlat, SWlng, NElat, NElng = bounds
@@ -29,6 +32,20 @@ def get_json_file_from_s3(path):
     filedata = fileobj['Body'].read()
     contents = filedata.decode('utf-8')
     return json.loads(contents)
+
+def get_image_from_s3(path):
+    s3client = boto3.client(
+        's3'
+    )
+    bucketname = "solarnet-data"
+    file_to_read = path
+    fileobj = s3client.get_object(
+        Bucket=bucketname,
+        Key=file_to_read
+    )
+    # img = load_img(io.BytesIO(fileobj['Body'].read()))
+    img = Image.open(fileobj['Body'])
+    return img
 
 
 def get_state_tiles(place_json, map_object, activate=True):
