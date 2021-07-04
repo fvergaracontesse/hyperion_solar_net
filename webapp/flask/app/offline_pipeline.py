@@ -80,7 +80,7 @@ if not os.path.isfile("data/"+coordinate_file + "_segmentation"):
     print("START Segmentation:", datetime.now())
     classification_tiles = load_pickle_file("data/"+coordinate_file + "_classification")
     solar_panel_tiles = list(filter(lambda x: x["prediction"] == 1, classification_tiles))
-    solar_panel_tiles_chunks = chunks(solar_panel_tiles, 50)
+    solar_panel_tiles_chunks = chunks(solar_panel_tiles, 80)
     segmentation_tiles = {}
     model = Segmentation()
     i = 0
