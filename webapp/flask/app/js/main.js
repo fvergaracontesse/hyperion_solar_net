@@ -257,7 +257,7 @@ function goToPlace(lng, lat, place) {
                      imageBounds
                   );
                   spOverlay.setMap(currentMap.map);
-                  spOverlay.setOpacity(0.2);
+                  spOverlay.setOpacity(0.6);
                   currentMap.predictions_overlays.push(spOverlay);
               };
         };
