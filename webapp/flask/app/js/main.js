@@ -101,7 +101,7 @@ class GoogleMap extends SNMap {
       streetViewControl: false,
       scaleControl: true,
       maxZoom: 21,
-      minZoom: 17,
+      minZoom: 8,
       tilt: 0,
     });
 
@@ -192,9 +192,77 @@ function removeOverlays() {
     currentMap.removeOverlays();
 }
 
-function goToPlace(lng, lat) {
+function getPlaceTiles() {
+    $('.places_tiles').show();
+}
+
+function removePlaceTiles() {
+    $('.places_tiles').hide();
+    if (map_modified==1){
+        map_modified = 0;
+        currentMap.removeOverlays();
+    }
+}
+
+function goToPlace(lng, lat, place) {
+    if (map_modified==1){
+        map_modified = 0;
+        currentMap.removeOverlays();
+    };
+    map_modified = 1;
+    $('#load-spinner-two').show();
+    console.log($('#load-spinner-two')[0]);
     c = [lng, lat];
     currentMap.setCenter(c);
+    const formData = new FormData();
+    formData.append('place', place);
+    fetch("/getplace",  { method: "POST", body: formData, })
+      .then(result => result.text())
+      .then(data => {
+          parsed_data = JSON.parse(data);
+          place = parsed_data[5];
+          id_tile = "#" + place + "_tile";
+          id_tile_sp = "#" + place + "_tile_sp";
+          id_sp = "#" + place + "_sp";
+          id_area = "#" + place + "_area";
+          total_tiles_sp = parsed_data[1];
+          total_count_sp = parsed_data[2];
+          total_sp_area = parsed_data[3];
+          total_tiles = parsed_data[4];
+          $(id_tile).text(total_tiles);
+          $(id_tile_sp).text(total_tiles_sp);
+          $(id_sp).text(total_count_sp);
+          $(id_area).text(total_sp_area);
+          for (tile of parsed_data[0]) {
+              let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+              var stroke_color = "#FF0000";
+              var z_index = 1;
+              if (tile["prediction"] == 1){
+                  stroke_color = "#00FF00";
+                  z_index = 2;
+              }
+              const rectangle = new google.maps.Rectangle({
+                strokeColor: stroke_color,
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillOpacity: 0.0,
+                map: currentMap.map,
+                bounds: imageBounds,
+                zIndex: z_index
+              });
+              currentMap.predictions_rectangles.push(rectangle);
+              if (tile["mask_url"] != ""){
+                  spOverlay = new google.maps.GroundOverlay(
+                     tile["mask"],
+                     imageBounds
+                  );
+                  spOverlay.setMap(currentMap.map);
+                  spOverlay.setOpacity(0.2);
+                  currentMap.predictions_overlays.push(spOverlay);
+              };
+        };
+        $('#load-spinner-two').hide();
+    });
 }
 
 function getObjects(type) {

@@ -32,7 +32,8 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removeOverlays()'>Remove Overlays</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='GetPlaceTiles()'>Get place tiles</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getPlaceTiles()'>Get place tiles</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removePlaceTiles()'>Remove place tiles</button>
                 </div>
             </div>
         </div>
@@ -48,6 +49,9 @@
                   </ul>
               </div>
               <div class="places_tiles">
+                  <div id="load-spinner-two" class="spinner-border" role="status">
+                      <span class="sr-only">Loading...</span>
+                  </div>
                   <div class="header">
                         <h3> Places tiles </h1>
                   </div>
@@ -56,14 +60,22 @@
                         <tr>
                           <th scope="col">#</th>
                           <th scope="col">State</th>
+                          <th scope="col">N# tiles</th>
+                          <th scope="col">N# tiles SP</th>
+                          <th scope="col">N# SP</th>
+                          <th scope="col">Total Area SP</th>
                           <th scope="col">Inference</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
                           <th scope="row">1</th>
-                          <td>Texas</td>
-                          <td><a class="place_inf" href="#" onclick="goToPlace(-100.07684249974044, 31.320283869049657)">Go</a></td>
+                          <td>Berkeley</td>
+                          <td id="berkeley_tile">-</td>
+                          <td id="berkeley_tile_sp">-</td>
+                          <td id="berkeley_sp">-</td>
+                          <td id="berkeley_area">-</td>
+                          <td><button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToPlace(-122.272781, 37.871666, 'berkeley')">Go</button></td>
                         </tr>
                       </tbody>
                 </table>

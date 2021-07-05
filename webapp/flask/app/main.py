@@ -30,6 +30,9 @@ import gc
 import datetime
 import sys
 import math
+from helpers.sn_helpers import (
+    load_pickle_file,
+)
 
 MAX_TILES = 1000
 MAX_TILES_SESSION = 100000
@@ -96,6 +99,35 @@ def map_func():
 def add_header(response):
     response.cache_control.max_age = 1
     return response
+
+@app.route('/getplace', methods=['POST'])
+def get_place():
+    zoom = 21
+    place = request.form.get("place")
+    file_name = f'data/coordinates/coord_{place}_segmentation'
+    tiles = load_pickle_file(file_name)
+    zoom_factor = 2**21 / 2**zoom
+    picHeight = 600/zoom_factor #Resulting image height in pixels (x2 if scale parameter is set to 2)
+    picWidth = 600/zoom_factor
+
+    xScale = math.pow(2, zoom) / (picWidth/256)
+    yScale = math.pow(2, zoom) / (picHeight/256)
+    total_tiles = 0
+    total_tiles_sp = 0
+    total_count_sp = 0
+    total_sp_area = 0
+    for i, tile in enumerate(tiles):
+        tile['filename'] = f"s3://solarnet-data/{tile['file_name']}"
+        if "mask_url" not in tile:
+            tile['mask_url'] = ""
+        tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
+        if "panels_area" in tile:
+            total_sp_area += tile["panels_area"]
+        if "panels_count" in tile:
+            total_count_sp += tile["panels_count"]
+        if "prediction" in tile and int(tile["prediction"])==1:
+            total_tiles_sp += 1
+    return json.dumps([tiles, total_tiles_sp, total_count_sp, round(total_sp_area,2), len(tiles), place])
 
 
 @app.route('/getobjects', methods=['POST'])

@@ -187,6 +187,10 @@ a:link {
     display: none;
 }
 
+#load-spinner-two {
+    display: none;
+}
+
 .map-controls{
     margin: 10px;
 }
@@ -220,4 +224,8 @@ a:link {
   padding: .75rem 1rem;
   border-width: 0;
   border-radius: 0;
+}
+
+.places_tiles {
+    display: none;
 }
