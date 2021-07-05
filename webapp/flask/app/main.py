@@ -120,6 +120,10 @@ def get_place():
         tile['filename'] = f"s3://solarnet-data/{tile['file_name']}"
         if "mask_url" not in tile:
             tile['mask_url'] = ""
+        else:
+            tmp_url = tile['mask_url'].replace("img/", "")
+            tile['mask_url'] = f"https://solarnet-data.s3.us-west-2.amazonaws.com/{tmp_url}"
+            print(tile['mask_url'])
         tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
         if "panels_area" in tile:
             total_sp_area += tile["panels_area"]

@@ -253,7 +253,7 @@ function goToPlace(lng, lat, place) {
               currentMap.predictions_rectangles.push(rectangle);
               if (tile["mask_url"] != ""){
                   spOverlay = new google.maps.GroundOverlay(
-                     tile["mask"],
+                     tile["mask_url"],
                      imageBounds
                   );
                   spOverlay.setMap(currentMap.map);
