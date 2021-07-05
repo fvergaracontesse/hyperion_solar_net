@@ -123,7 +123,6 @@ def get_place():
         else:
             tmp_url = tile['mask_url'].replace("img/", "")
             tile['mask_url'] = f"https://solarnet-data.s3.us-west-2.amazonaws.com/{tmp_url}"
-            print(tile['mask_url'])
         tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
         if "panels_area" in tile:
             total_sp_area += tile["panels_area"]
@@ -258,6 +257,8 @@ def get_objects():
             for i, tile in enumerate(tiles):
                 if tile["id"] in result_tiles:
                     tiles[i] = result_tiles[tile["id"]]
+                    if "mask_url" in tiles[i]:
+                        tiles[i]["mask_url"] = f"/{tiles[i]['mask_url']}"
         else:
             print("NO TILES FOR PREDICTION")
         return json.dumps(tiles)

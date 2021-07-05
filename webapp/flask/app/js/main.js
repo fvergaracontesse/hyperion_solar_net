@@ -211,7 +211,6 @@ function goToPlace(lng, lat, place) {
     };
     map_modified = 1;
     $('#load-spinner-two').show();
-    console.log($('#load-spinner-two')[0]);
     c = [lng, lat];
     currentMap.setCenter(c);
     const formData = new FormData();
@@ -389,14 +388,15 @@ function getObjects(type) {
                   zIndex: z_index
                 });
                 currentMap.predictions_rectangles.push(rectangle);
-                console.log(tile["url"])
-                spOverlay = new google.maps.GroundOverlay(
-                   tile["url"],
-                   imageBounds
-                );
-                spOverlay.setMap(currentMap.map);
-                spOverlay.setOpacity(0.2);
-                currentMap.predictions_overlays.push(spOverlay);
+                if (tile["mask_url"] != ""){
+                    spOverlay = new google.maps.GroundOverlay(
+                       tile["mask_url"],
+                       imageBounds
+                    );
+                    spOverlay.setMap(currentMap.map);
+                    spOverlay.setOpacity(0.6);
+                    currentMap.predictions_overlays.push(spOverlay);
+                };
             };
             $('#table-results').bootstrapTable('destroy').bootstrapTable({
               columns: [{
