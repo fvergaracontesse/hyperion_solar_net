@@ -27,71 +27,86 @@
         <div class="row g-0">
             <div class="col-sm-12">
                 <div class="search"> <input type="text" id="search" class="search-input" placeholder="Search..." name=""> <a href="#" class="search-icon"> <i class="fa fa-search"></i> </a> </div>
-                <div class="button-group">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("tiles")'>Display Tiles</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removeOverlays()'>Remove Overlays</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getPlaceTiles()'>Display Region Tiles</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removePlaceTiles()'>Remove Region Tiles</button>
-                </div>
             </div>
         </div>
         <div class="row g-0 h-100">
             <div class="col-sm-4 results h-100">
-                <div class="header">
-                      <h3> Map information </h1>
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Online</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Preprocessed</button>
+                  </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                  <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                      <div class="results">
+                          <div class="button-group">
+                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("tiles")'>Display Tiles</button>
+                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("classification")'>Classify Solar Tiles</button>
+                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick='getObjects("segmentation")'>Segment Solar Tiles</button>
+                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removeOverlays()'>Remove Overlays</button>
+                          </div>
+                          <div class="header">
+                                <h3> Map information </h1>
+                          </div>
+                          <div class="map-controls">
+                              <ul>
+                                  <li><div id="map-options-zoom"></div></li>
+                                  <li><div id="map-options-center"></div></li>
+                              </ul>
+                          </div>
+                          <div id="load-spinner" class="spinner-border" role="status">
+                              <span class="sr-only">Loading...</span>
+                          </div>
+                          <div class="header">
+                                <h3> Results </h1>
+                          </div>
+                          <div id="results">
+                              <table id="table-results" data-pagination="true" data-page-size="32" class="table">
+                              </table>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                      <div class="places_tiles">
+                          <div class="button-group">
+                              <button type="button" class="btn btn-sm btn-outline-secondary" onclick='removePlaceTiles()'>Remove Inference Overlays</button>
+                          </div>
+                          <div id="load-spinner-two" class="spinner-border" role="status">
+                              <span class="sr-only">Loading...</span>
+                          </div>
+                          <div class="header">
+                                <h3> Preprocessed Regions </h1>
+                          </div>
+                          <table class="table table-adj">
+                              <thead>
+                                <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">State</th>
+                                  <th scope="col">N# tiles</th>
+                                  <th scope="col">N# tiles SP</th>
+                                  <th scope="col">N# SP</th>
+                                  <th scope="col">Total Area SP</th>
+                                  <th scope="col">Inference</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <th scope="row">1</th>
+                                  <td>Berkeley</td>
+                                  <td id="berkeley_tile">-</td>
+                                  <td id="berkeley_tile_sp">-</td>
+                                  <td id="berkeley_sp">-</td>
+                                  <td id="berkeley_area">-</td>
+                                  <td><button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToPlace(-122.272781, 37.871666, 'berkeley')">Go</button></td>
+                                </tr>
+                              </tbody>
+                        </table>
+                      </div>
+                  </div>
                 </div>
-              <div class="map-controls">
-                  <ul>
-                      <li><div id="map-options-zoom"></div></li>
-                      <li><div id="map-options-center"></div></li>
-                  </ul>
-              </div>
-              <div class="places_tiles">
-                  <div id="load-spinner-two" class="spinner-border" role="status">
-                      <span class="sr-only">Loading...</span>
-                  </div>
-                  <div class="header">
-                        <h3> Places tiles </h1>
-                  </div>
-                  <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">State</th>
-                          <th scope="col">N# tiles</th>
-                          <th scope="col">N# tiles SP</th>
-                          <th scope="col">N# SP</th>
-                          <th scope="col">Total Area SP</th>
-                          <th scope="col">Inference</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Berkeley</td>
-                          <td id="berkeley_tile">-</td>
-                          <td id="berkeley_tile_sp">-</td>
-                          <td id="berkeley_sp">-</td>
-                          <td id="berkeley_area">-</td>
-                          <td><button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToPlace(-122.272781, 37.871666, 'berkeley')">Go</button></td>
-                        </tr>
-                      </tbody>
-                </table>
-              </div>
-              <div class="results">
-                  <div id="load-spinner" class="spinner-border" role="status">
-                      <span class="sr-only">Loading...</span>
-                  </div>
-                  <div class="header">
-                        <h3> Results </h1>
-                  </div>
-                  <div id="results">
-                      <table id="table-results" data-pagination="true" data-page-size="32" class="table">
-                      </table>
-                  </div>
-              </div>
           </div>
           <div class="col-sm-8 h-100">
                 <div id="google-map"></div>

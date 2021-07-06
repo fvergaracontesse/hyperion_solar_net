@@ -46,9 +46,16 @@ body {
 }
 
 .button-group {
+    padding-left: 5px;
     margin-bottom: 10px;
     margin-top: 10px;
 
+}
+
+.table-adj {
+    max-width: 550px;
+    display: block;
+    padding-left: 5px;
 }
 
 .results {
@@ -215,6 +222,7 @@ a:link {
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
 }
 
+
 .navbar .navbar-toggler {
   top: .25rem;
   right: 1rem;
@@ -224,8 +232,4 @@ a:link {
   padding: .75rem 1rem;
   border-width: 0;
   border-radius: 0;
-}
-
-.places_tiles {
-    display: none;
 }
