@@ -53,6 +53,8 @@ google_api_key = app.config["GOOGLE_API_KEY"]
 
 loop = asyncio.new_event_loop()
 
+model_classification = Classification()
+
 
 # route for js code
 @app.route('/img/<path:path>')
@@ -230,9 +232,8 @@ def get_objects():
         return json.dumps(tiles)
     elif type == 'classification':
         print(" returning classification prediction")
-        model = Classification()
         # tiles = model.predict(tiles)
-        tiles_overlap = model.predict(tiles_overlap)
+        tiles_overlap = model_classification.predict(tiles_overlap)
         for tile in tiles:
             for tile_overlap in tiles_overlap:
                 check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
@@ -241,9 +242,8 @@ def get_objects():
         return json.dumps(tiles)
     elif type == 'segmentation':
         print(" returning segmentation prediction")
-        model = Classification()
         # tiles = model.predict(tiles)
-        tiles_overlap = model.predict(tiles_overlap)
+        tiles_overlap = model_classification.predict(tiles_overlap)
         for tile in tiles:
             for tile_overlap in tiles_overlap:
                 check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
@@ -251,9 +251,8 @@ def get_objects():
                     tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
         tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
         if len(tiles_pred) > 0:
-            model = Segmentation()
             # our tiles for prediction are at zoom 21
-            result_tiles = model.predict(tiles_pred, 21)
+            result_tiles = model_segmentation.predict(tiles_pred, 21)
             for i, tile in enumerate(tiles):
                 if tile["id"] in result_tiles:
                     tiles[i] = result_tiles[tile["id"]]
@@ -262,3 +261,8 @@ def get_objects():
         else:
             print("NO TILES FOR PREDICTION")
         return json.dumps(tiles)
+
+#if __name__ == '__main__':
+#    model_classification = Classification()
+    #model_segmentation = Segmentation()
+

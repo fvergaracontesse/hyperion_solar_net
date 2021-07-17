@@ -21,6 +21,18 @@ from helpers.sn_helpers import (
     get_image_stream_from_s3
 )
 import os
+from tensorflow.python.compiler.tensorrt import trt_convert as trt
+from tensorflow.python.saved_model import tag_constants
+from tensorflow.keras.preprocessing import image
+import time
+
+config = tf.compat.v1.ConfigProto(gpu_options =
+                         tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
+# device_count = {'GPU': 1}
+)
+config.gpu_options.allow_growth = True
+session = tf.compat.v1.Session(config=config)
+tf.compat.v1.keras.backend.set_session(session)
 
 
 sm.set_framework('tf.keras')
@@ -45,7 +57,19 @@ class Classification:
 
     def __init__(self, models_folder='models', model_en='b7'):
         # load pre-trained EfficientNet model
-        self.model = keras.models.load_model(f'{models_folder}/enb7_solar_classifier_model.h5')
+        # self.model = keras.models.load_model(f'{models_folder}/enb7_solar_classifier_model.h5')
+        start = time.time()
+        self.model = tf.saved_model.load(f'{models_folder}/enb7_solar_classifier_model_TFTRT_FP32', tags=[tag_constants.SERVING])
+        end = time.time()
+        print("LOAD MODEL")
+        print(end - start)
+
+        start = time.time()
+        self.infer = self.model.signatures['serving_default']
+        end = time.time()
+        print("SETUP INFER")
+        print(end - start)
+
         self.params_dict = {
                 # Coefficients:   res
                 'b0': (224, 224),
@@ -64,15 +88,46 @@ class Classification:
         self.batch_size = 20
 
     def predict(self, tiles, fromS3=False):
+        start = time.time()
+        batched_input = np.zeros((len(tiles), 600, 600, 3), dtype=np.float32)
+        end = time.time()
+        print("CREATE BATCH INPUT")
+        print(end - start)
         # predicting images
-        if not fromS3:
-            images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
-        else:
-            images = list(map(lambda x: np.expand_dims(img_to_array(get_image_from_s3(x['file_name'])), axis=0), tiles))
-        images = np.vstack(images)
-        predictions = self.model.predict_on_batch(images).flatten()
-        predictions = tf.nn.sigmoid(predictions)
-        predictions = tf.where(predictions < 0.5, 0, 1).numpy().tolist()
+        #if not fromS3:
+        #    images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
+        #else:
+        #    images = list(map(lambda x: np.expand_dims(img_to_array(get_image_from_s3(x['file_name'])), axis=0), tiles))
+        start = time.time()
+        for i, tile in enumerate(tiles):
+            x = np.expand_dims(img_to_array(load_img(tile['filename'], grayscale=False)), axis=0)
+            batched_input[i, :] = x
+        end = time.time()
+        print("ENUMERATE")
+        print(end - start)
+
+        start = time.time()
+        batched_input = tf.constant(batched_input)
+        end = time.time()
+        print("CREATE TF CONSTANT")
+        print(end - start)
+
+        # images = np.vstack(images)
+        #print(type(images))
+        # print(batched_inpu.shape)
+        #images = tf.constant(np.vstack(images))
+        #print(images)
+        # predictions = self.model.predict_on_batch(images).flatten()
+        # predictions = tf.nn.sigmoid(predictions)
+        # predictions = tf.where(predictions < 0.5, 0, 1).numpy().tolist()
+        start = time.time()
+        labeling = self.infer(batched_input)
+        end = time.time()
+        print("INFER")
+        print(end - start)
+        preds = labeling['dense']
+        preds = tf.nn.sigmoid(preds)
+        predictions = tf.where(preds < 0.5, 0, 1).numpy().tolist()
         for i, tile in enumerate(tiles):
             tile["prediction"] = predictions[i]
         return tiles
