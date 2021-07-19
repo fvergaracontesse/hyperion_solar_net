@@ -1,13 +1,13 @@
 """Use this class for predictions with efficient net."""
 import tensorflow as tf
-from tensorflow import keras
+# from tensorflow import keras
 import numpy as np
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
-import segmentation_models as sm
-from segmentation_models import Unet
+# import segmentation_models as sm
+# from segmentation_models import Unet
 #from segmentation_models.metrics import iou_score
-from segmentation_models.metrics import IOUScore
-from tensorflow.keras import backend, layers
+# from segmentation_models.metrics import IOUScore
+# from tensorflow.keras import backend, layers
 from PIL import Image
 import cv2
 from json import JSONEncoder
@@ -21,31 +21,25 @@ from helpers.sn_helpers import (
     get_image_stream_from_s3
 )
 import os
-from tensorflow.python.compiler.tensorrt import trt_convert as trt
-from tensorflow.python.saved_model import tag_constants
-from tensorflow.keras.preprocessing import image
+# from tensorflow.python.compiler.tensorrt import trt_convert as trt
+# from tensorflow.python.saved_model import tag_constants
+# from tensorflow.keras.preprocessing import image
 import time
+import requests
+import json
+# from helpers.sn_helpers import chunks
 
-config = tf.compat.v1.ConfigProto(gpu_options =
-                         tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
-# device_count = {'GPU': 1}
-)
-config.gpu_options.allow_growth = True
-session = tf.compat.v1.Session(config=config)
-tf.compat.v1.keras.backend.set_session(session)
+# sm.set_framework('tf.keras')
 
-
-sm.set_framework('tf.keras')
-
-class FixedDropout(layers.Dropout):
-        def _get_noise_shape(self, inputs):
-            if self.noise_shape is None:
-                return self.noise_shape
-
-            symbolic_shape = backend.shape(inputs)
-            noise_shape = [symbolic_shape[axis] if shape is None else shape
-                           for axis, shape in enumerate(self.noise_shape)]
-            return tuple(noise_shape)
+# class FixedDropout(layers.Dropout):
+#        def _get_noise_shape(self, inputs):
+#            if self.noise_shape is None:
+#                return self.noise_shape
+#
+#            symbolic_shape = backend.shape(inputs)
+#            noise_shape = [symbolic_shape[axis] if shape is None else shape
+#                           for axis, shape in enumerate(self.noise_shape)]
+#            return tuple(noise_shape)
 
 class NumpyArrayEncoder(JSONEncoder):
     def default(self, obj):
@@ -55,20 +49,19 @@ class NumpyArrayEncoder(JSONEncoder):
 
 class Classification:
 
-    def __init__(self, models_folder='models', model_en='b7'):
+    def __init__(self, models_folder='models', model_en='b7', from_server=True):
         # load pre-trained EfficientNet model
         # self.model = keras.models.load_model(f'{models_folder}/enb7_solar_classifier_model.h5')
-        start = time.time()
-        self.model = tf.saved_model.load(f'{models_folder}/enb7_solar_classifier_model_TFTRT_FP32', tags=[tag_constants.SERVING])
-        end = time.time()
-        print("LOAD MODEL")
-        print(end - start)
+        # self.model = tf.saved_model.load(f'{models_folder}/enb7_solar_classifier_model_TFTRT_FP32', tags=[tag_constants.SERVING])
+        # end = time.time()
+        # print("LOAD MODEL")
+        # print(end - start)
 
-        start = time.time()
-        self.infer = self.model.signatures['serving_default']
-        end = time.time()
-        print("SETUP INFER")
-        print(end - start)
+        # start = time.time()
+        # self.infer = self.model.signatures['serving_default']
+        # end = time.time()
+        # print("SETUP INFER")
+        # print(end - start)
 
         self.params_dict = {
                 # Coefficients:   res
@@ -88,29 +81,35 @@ class Classification:
         self.batch_size = 20
 
     def predict(self, tiles, fromS3=False):
-        start = time.time()
+        # start = time.time()
         batched_input = np.zeros((len(tiles), 600, 600, 3), dtype=np.float32)
-        end = time.time()
-        print("CREATE BATCH INPUT")
-        print(end - start)
+        # end = time.time()
+        # print("CREATE BATCH INPUT")
+        # print(end - start)
         # predicting images
         #if not fromS3:
         #    images = list(map(lambda x: np.expand_dims(img_to_array(load_img(x['filename'], grayscale=False)), axis=0), tiles))
         #else:
         #    images = list(map(lambda x: np.expand_dims(img_to_array(get_image_from_s3(x['file_name'])), axis=0), tiles))
-        start = time.time()
+        # start = time.time()
         for i, tile in enumerate(tiles):
-            x = np.expand_dims(img_to_array(load_img(tile['filename'], grayscale=False)), axis=0)
+            tmp_image = cv2.imread(img)
+            resized = cv2.resize(tmp_image, (600, 600))[...,::-1].astype(np.float32)
+            x = np.expand_dims(resized.reshape(600, 600, 3), axis=0)
+            # x = np.expand_dims(img_to_array(load_img(tile['filename'], grayscale=False)), axis=0)
+            # tmp_image = cv2.imread(tile['filename'], cv2.IMREAD_COLOR)/255
+            # resized = cv2.resize(tmp_image, self.image_size)
+            # image = resized.reshape(self.image_size[0], self.image_size[1], 3)
             batched_input[i, :] = x
-        end = time.time()
-        print("ENUMERATE")
-        print(end - start)
+        # end = time.time()
+        # print("ENUMERATE")
+        # print(end - start)
 
-        start = time.time()
-        batched_input = tf.constant(batched_input)
-        end = time.time()
-        print("CREATE TF CONSTANT")
-        print(end - start)
+        # start = time.time()
+        # batched_input = tf.constant(batched_input)
+        # end = time.time()
+        # print("CREATE TF CONSTANT")
+        # print(end - start)
 
         # images = np.vstack(images)
         #print(type(images))
@@ -120,16 +119,22 @@ class Classification:
         # predictions = self.model.predict_on_batch(images).flatten()
         # predictions = tf.nn.sigmoid(predictions)
         # predictions = tf.where(predictions < 0.5, 0, 1).numpy().tolist()
-        start = time.time()
-        labeling = self.infer(batched_input)
-        end = time.time()
-        print("INFER")
-        print(end - start)
-        preds = labeling['dense']
-        preds = tf.nn.sigmoid(preds)
-        predictions = tf.where(preds < 0.5, 0, 1).numpy().tolist()
+        # start = time.time()
+        # labeling = self.infer(batched_input)
+        # end = time.time()
+        # print("INFER")
+        # print(end - start)
+        batches = chunks(batched_input.tolist(), 4)
+        predictions = []
+        for batch in batches:
+            data = json.dumps({"signature_name": "serving_default", "instances": batch})
+            headers = {"content-type": "application/json"}
+            json_response = requests.post('http://localhost:8501/v1/models/classification_model:predict', data=data, headers=headers)
+            preds = json.loads(json_response.text)["predictions"]
+            preds = tf.nn.sigmoid(preds)
+            predictions.extend(tf.where(preds < 0.5, 0, 1).numpy().tolist())
         for i, tile in enumerate(tiles):
-            tile["prediction"] = predictions[i]
+            tile["prediction"] = predictions[i][0]
         return tiles
 
 class Segmentation:
@@ -137,11 +142,11 @@ class Segmentation:
     def __init__(self, models_folder='models', model_en='b7'):
         # load pre-trained EfficientNet model
         # model = Unet(backbone_name = 'efficientnetb7', encoder_weights='imagenet', encoder_freeze = False)
-        self.model = keras.models.load_model(f'{models_folder}/unet_solar_segmentation_model.h5',
-                                                custom_objects={'iou_score': IOUScore(threshold=0.5),
-                                                'f1-score': sm.metrics.FScore(threshold=0.5),
-                                                'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss
-                                                })
+        # self.model = keras.models.load_model(f'{models_folder}/unet_solar_segmentation_model.h5',
+        #                                        custom_objects={'iou_score': IOUScore(threshold=0.5),
+        #                                        'f1-score': sm.metrics.FScore(threshold=0.5),
+        #                                        'binary_crossentropy_plus_jaccard_loss': sm.losses.bce_jaccard_loss
+        #                                        })
 
         self.model_en = model_en
         self.image_width = 512
@@ -199,9 +204,15 @@ class Segmentation:
             image = resized.reshape(self.image_width, self.image_height, 3)
             images[i, ...] = image
             i = i+1
-        predicted = (self.model.predict_on_batch(images))
-        predicted = tf.where(predicted < tf.cast(0.5, tf.float64), 0, 1).numpy()
-        for i, prediction in enumerate(predicted):
+        batches = chunks(images.tolist(), 4)
+        predictions = []
+        for batch in batches:
+            data = json.dumps({"signature_name": "serving_default", "instances": batch})
+            headers = {"content-type": "application/json"}
+            json_response = requests.post('http://localhost:8501/v1/models/segmentation_model:predict', data=data, headers=headers)
+            preds = json.loads(json_response.text)["predictions"]
+            predictions.extend(tf.where(preds < tf.cast(0.5, tf.float64), 0, 1).numpy())
+        for i, prediction in enumerate(predictions):
             predicted_matrix = np.array(Image.fromarray(prediction.reshape(self.image_width, self.image_height)).resize((600, 600)))
 
             # convert mask to a 4D image

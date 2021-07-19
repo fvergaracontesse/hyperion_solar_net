@@ -53,7 +53,7 @@ google_api_key = app.config["GOOGLE_API_KEY"]
 
 loop = asyncio.new_event_loop()
 
-model_classification = Classification()
+# model_classification = Classification()
 
 
 # route for js code
@@ -262,7 +262,9 @@ def get_objects():
             print("NO TILES FOR PREDICTION")
         return json.dumps(tiles)
 
-#if __name__ == '__main__':
-#    model_classification = Classification()
+if __name__ == '__main__':
+    app.run()
+    print("HELLO MAIN")
+    model_classification = Classification()
     #model_segmentation = Segmentation()
 

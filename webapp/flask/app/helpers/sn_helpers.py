@@ -9,7 +9,7 @@ import hmac
 import base64
 import urllib.parse as urlparse
 import io
-from tensorflow.keras.preprocessing.image import load_img
+# from tensorflow.keras.preprocessing.image import load_img
 from PIL import Image
 
 def check_tile_center_against_bounds(t, bounds):
