@@ -9,6 +9,7 @@ import hmac
 import base64
 import urllib.parse as urlparse
 import io
+import numpy as np
 # from tensorflow.keras.preprocessing.image import load_img
 from PIL import Image
 
@@ -215,3 +216,6 @@ def sign_url(input_url=None, secret=None):
 
     # Return signed URL
     return original_url + "&signature=" + encoded_signature.decode()
+
+def sigmoid(x):
+  return 1 / (1 + np.exp(-x))
