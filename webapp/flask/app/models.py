@@ -48,7 +48,7 @@ class Classification:
     def predict(self, tiles, fromS3=False):
         batched_input = np.zeros((len(tiles), 600, 600, 3), dtype=np.float32)
         for i, tile in enumerate(tiles):
-            tmp_image = cv2.imread(img)
+            tmp_image = cv2.imread(tile["filename"])
             resized = cv2.resize(tmp_image, (600, 600))[...,::-1].astype(np.float32)
             x = np.expand_dims(resized.reshape(600, 600, 3), axis=0)
             batched_input[i, :] = x
@@ -57,10 +57,10 @@ class Classification:
         for batch in batches:
             data = json.dumps({"signature_name": "serving_default", "instances": batch})
             headers = {"content-type": "application/json"}
-            json_response = requests.post('http://localhost:8501/v1/models/classification_model:predict', data=data, headers=headers)
+            json_response = requests.post('http://localhost:8501/v1/models/classification_mobilenet_model:predict', data=data, headers=headers)
             preds = json.loads(json_response.text)["predictions"]
             preds = sigmoid(np.array(preds))
-            predictions.extend(np.where(preds < 0.5, 0, 1).numpy().tolist())
+            predictions.extend(np.where(preds < 0.5, 0, 1).tolist())
         for i, tile in enumerate(tiles):
             tile["prediction"] = predictions[i][0]
         return tiles
@@ -108,7 +108,6 @@ class Segmentation:
 
     def predict(self, tiles, zoom, fromS3=False, place=None):
         images = np.empty((len(tiles), self.image_width, self.image_height, 3), dtype=np.float32)
-        i = 0
         if place:
             if not os.path.exists(f'{self.segmentation_image_folder}/{place}'):
                 os.makedirs(f'{self.segmentation_image_folder}/{place}')
@@ -128,7 +127,7 @@ class Segmentation:
         for batch in batches:
             data = json.dumps({"signature_name": "serving_default", "instances": batch})
             headers = {"content-type": "application/json"}
-            json_response = requests.post('http://localhost:8501/v1/models/segmentation_model:predict', data=data, headers=headers)
+            json_response = requests.post('http://localhost:8501/v1/models/segmentation_mobilenet_model:predict', data=data, headers=headers)
             preds = json.loads(json_response.text)["predictions"]
             predictions.extend(np.where(np.array(preds) < 0.5, 0, 1).astype(np.float32))
         for i, prediction in enumerate(predictions):
