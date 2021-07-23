@@ -52,12 +52,12 @@ class Classification:
             resized = cv2.resize(tmp_image, (600, 600))[...,::-1].astype(np.float32)
             x = np.expand_dims(resized.reshape(600, 600, 3), axis=0)
             batched_input[i, :] = x
-        batches = chunks(batched_input.tolist(), 8)
+        batches = chunks(batched_input.tolist(), 10)
         predictions = []
         for batch in batches:
             data = json.dumps({"signature_name": "serving_default", "instances": batch})
             headers = {"content-type": "application/json"}
-            json_response = requests.post('http://localhost:8501/v1/models/classification_mobilenet_model:predict', data=data, headers=headers)
+            json_response = requests.post('http://localhost:8501/v1/models/enb7_classifier:predict', data=data, headers=headers)
             preds = json.loads(json_response.text)["predictions"]
             preds = sigmoid(np.array(preds))
             predictions.extend(np.where(preds < 0.5, 0, 1).tolist())
@@ -127,7 +127,7 @@ class Segmentation:
         for batch in batches:
             data = json.dumps({"signature_name": "serving_default", "instances": batch})
             headers = {"content-type": "application/json"}
-            json_response = requests.post('http://localhost:8501/v1/models/segmentation_mobilenet_model:predict', data=data, headers=headers)
+            json_response = requests.post('http://localhost:8501/v1/models/unet_segmentation:predict', data=data, headers=headers)
             preds = json.loads(json_response.text)["predictions"]
             predictions.extend(np.where(np.array(preds) < 0.5, 0, 1).astype(np.float32))
         for i, prediction in enumerate(predictions):

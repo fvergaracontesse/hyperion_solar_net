@@ -65,11 +65,10 @@ if not os.path.isfile("data/"+coordinate_file + "_img"):
     save_pickle_file("data/"+coordinate_file + "_img", tiles_poly)
 
 if not os.path.isfile("data/"+coordinate_file + "_classification"):
-    print("START CLASSIFICATION:", datetime.now())
     model = Classification()
     classification_tiles = []
     tiles_poly = load_pickle_file("data/"+coordinate_file + "_img")
-    tiles_poly_chunks = chunks(tiles_poly, 20)
+    tiles_poly_chunks = chunks(tiles_poly, 8)
     for chunk in tiles_poly_chunks:
         classification_tiles.extend(model.predict(chunk, True))
         print("Iteration:", datetime.now())
@@ -80,7 +79,7 @@ if not os.path.isfile("data/"+coordinate_file + "_segmentation"):
     print("START Segmentation:", datetime.now())
     classification_tiles = load_pickle_file("data/"+coordinate_file + "_classification")
     solar_panel_tiles = list(filter(lambda x: x["prediction"] == 1, classification_tiles))
-    solar_panel_tiles_chunks = chunks(solar_panel_tiles, 80)
+    solar_panel_tiles_chunks = chunks(solar_panel_tiles, 8)
     segmentation_tiles = {}
     model = Segmentation()
     i = 0
