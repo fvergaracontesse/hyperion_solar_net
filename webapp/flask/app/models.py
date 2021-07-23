@@ -52,7 +52,7 @@ class Classification:
             resized = cv2.resize(tmp_image, (600, 600))[...,::-1].astype(np.float32)
             x = np.expand_dims(resized.reshape(600, 600, 3), axis=0)
             batched_input[i, :] = x
-        batches = chunks(batched_input.tolist(), 4)
+        batches = chunks(batched_input.tolist(), 8)
         predictions = []
         for batch in batches:
             data = json.dumps({"signature_name": "serving_default", "instances": batch})
@@ -122,7 +122,7 @@ class Segmentation:
             resized = cv2.resize(tmp_image, (self.image_width, self.image_height))
             image = resized.reshape(self.image_width, self.image_height, 3)
             images[i, ...] = image
-        batches = chunks(images.tolist(), 4)
+        batches = chunks(images.tolist(), 8)
         predictions = []
         for batch in batches:
             data = json.dumps({"signature_name": "serving_default", "instances": batch})

@@ -101,7 +101,7 @@ class GoogleMap extends SNMap {
       streetViewControl: false,
       scaleControl: true,
       maxZoom: 21,
-      minZoom: 8,
+      minZoom: 19,
       tilt: 0,
     });
 
