@@ -264,6 +264,10 @@ function goToPlace(lng, lat, place) {
     });
 }
 
+function modifyMinZoom(minZoom) {
+  currentMap.map.setOptions({minZoom: minZoom});
+}
+
 function getObjects(type) {
   //let center = currentMap.getCenterUrl();
   if (map_modified==1){
