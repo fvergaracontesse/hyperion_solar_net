@@ -5,7 +5,7 @@ IMG_SIZE = 600
 SEG_IMG_SIZE = 512
 CLASSIFICATION_MODEL_NAME = models_folder+'/hyperionsolarnet_classifier_model.h5'
 SEGMENTATION_MODEL_NAME = models_folder+'/hyperionsolarnet_segmentation_model.h5'
-class_model =   model = keras.models.load_model(CLASSIFICATION_MODEL_NAME)
+class_model = keras.models.load_model(CLASSIFICATION_MODEL_NAME)
 sm.set_framework('tf.keras')
 seg_model = keras.models.load_model(SEGMENTATION_MODEL_NAME,
                    custom_objects={'iou_score': sm.metrics.IOUScore(threshold=0.5), 
