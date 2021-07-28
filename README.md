@@ -1,9 +1,9 @@
-# HyperionSolarNet: Solar Panel Detection from Aerial Images
+## HyperionSolarNet: Solar Panel Detection from Aerial Images
 
-## HyperionSolarNet Models are available here for download
+### HyperionSolarNet Models are available here for download
 https://drive.google.com/drive/folders/16vBSShfw1S-hT87cLTvj9lEe1aPSbDDi?usp=sharing
 
-## Example code showing how the models can be used to classify and segment images
+### Example code showing how the models can be used to classify and segment images
 
 ```
 import numpy as np
