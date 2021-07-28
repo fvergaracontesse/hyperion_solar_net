@@ -1,6 +1,13 @@
 ## Example code showing how the models can be used to classify and segment images
 
 ```
+
+import numpy as np
+from PIL import Image
+import tensorflow as tf
+from tensorflow import keras
+import segmentation_models as sm
+
 IMG_SIZE = 600
 SEG_IMG_SIZE = 512
 CLASSIFICATION_MODEL_NAME = models_folder+'/hyperionsolarnet_classifier_model.h5'
