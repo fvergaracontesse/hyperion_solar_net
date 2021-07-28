@@ -1,4 +1,4 @@
-# Example code 
+## Example code showing how the models can be used to classify and segment images
 
 ```
 IMG_SIZE = 600
@@ -22,16 +22,16 @@ for filename in os.listdir(datafolder):
   results_dict = {}
   # first, classify the image
   # CV2 reads images in BGR
-  class_tmp_image = cv2.imread(pathname, cv2.IMREAD_COLOR)
-  resized = cv2.resize(class_tmp_image, (600, 600))[...,::-1].astype(np.float32) #convert to RGB
-  class_image = np.expand_dims(resized.reshape(600, 600, 3), axis=0)
+  tmp_image = cv2.imread(pathname, cv2.IMREAD_COLOR)
+  resized = cv2.resize(tmp_image, (IMG_SIZE, IMG_SIZE))[...,::-1].astype(np.float32) #convert to RGB
+  class_image = np.expand_dims(resized.reshape(IMG_SIZE, IMG_SIZE, 3), axis=0)
   class_label = class_model.predict(class_image)
   class_label = tf.nn.sigmoid(class_label)
 
   # if image is classified as solar, pass it through the segmentation model
   if (class_label > 0.5):
     solar_images += 1
-    tmp_image = cv2.imread(pathname, cv2.IMREAD_COLOR)/255  #BGR
+    tmp_image = tmp_image/255  #BGR
     resized = cv2.resize(tmp_image, (SEG_IMG_SIZE, SEG_IMG_SIZE))
     image = resized.reshape(SEG_IMG_SIZE, SEG_IMG_SIZE, 3)   
 
