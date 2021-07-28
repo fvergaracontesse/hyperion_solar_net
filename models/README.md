@@ -28,7 +28,6 @@ datafolder = <folder containing images>
 
 for filename in os.listdir(datafolder): 
   pathname = os.path.join(datafolder, filename)
-  results_dict = {}
   # first, classify the image
   # CV2 reads images in BGR
   tmp_image = cv2.imread(pathname, cv2.IMREAD_COLOR)
@@ -39,7 +38,6 @@ for filename in os.listdir(datafolder):
 
   # if image is classified as solar, pass it through the segmentation model
   if (class_label > 0.5):
-    solar_images += 1
     tmp_image = tmp_image/255  #BGR
     resized = cv2.resize(tmp_image, (SEG_IMG_SIZE, SEG_IMG_SIZE))
     image = resized.reshape(SEG_IMG_SIZE, SEG_IMG_SIZE, 3)   
