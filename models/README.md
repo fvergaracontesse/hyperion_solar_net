@@ -1,7 +1,6 @@
 ## Example code showing how the models can be used to classify and segment images
 
 ```
-
 import numpy as np
 from PIL import Image
 import tensorflow as tf
