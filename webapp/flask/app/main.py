@@ -104,7 +104,8 @@ def add_header(response):
 
 @app.route('/getplace', methods=['POST'])
 def get_place():
-    zoom = 21
+    print("GET PLACE", "ZOOM 19")
+    zoom = 19
     place = request.form.get("place")
     file_name = f'data/coordinates/coord_{place}_segmentation'
     tiles = load_pickle_file(file_name)

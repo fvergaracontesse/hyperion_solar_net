@@ -166,7 +166,7 @@ class GoogleMap extends SNMap {
   }
   setCenter(c) {
     this.map.setCenter({ lat: c[1], lng: c[0] });
-    //this.map.setZoom(19);
+    this.map.setZoom(20);
   }
   getBounds() {
     let bounds = this.map.getBounds();
@@ -256,7 +256,7 @@ function goToPlace(lng, lat, place) {
                      imageBounds
                   );
                   spOverlay.setMap(currentMap.map);
-                  spOverlay.setOpacity(0.6);
+                  spOverlay.setOpacity(0.7);
                   currentMap.predictions_overlays.push(spOverlay);
               };
         };
