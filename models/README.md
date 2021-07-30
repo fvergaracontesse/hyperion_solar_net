@@ -1,5 +1,3 @@
-## HyperionSolarNet: Solar Panel Detection from Aerial Images
-
 ### HyperionSolarNet Models are available here for download
 https://drive.google.com/drive/folders/16vBSShfw1S-hT87cLTvj9lEe1aPSbDDi?usp=sharing
 
@@ -29,7 +27,7 @@ seg_model = keras.models.load_model(SEGMENTATION_MODEL_NAME,
 datafolder = <folder containing images>
 
 for filename in os.listdir(datafolder): 
-  pathname = os.path.join(datafolder, filename)  
+  pathname = os.path.join(datafolder, filename)
   # first, classify the image
   # CV2 reads images in BGR
   tmp_image = cv2.imread(pathname, cv2.IMREAD_COLOR)
