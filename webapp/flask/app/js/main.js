@@ -232,13 +232,45 @@ function goToPlace(lng, lat, place) {
           $(id_tile_sp).text(total_tiles_sp);
           $(id_sp).text(total_count_sp);
           $(id_area).text(total_sp_area);
+	  var h = 300;
+          var w = 300;
+
+          // var centerPixel = currentMap.map.getProjection().fromLatLngToPoint(latLng);
+          // var pixelSize = Math.pow(2, -currentMap.map.getZoom());
+
+          // var nePoint = new google.maps.Point(centerPixel.x + w*pixelSize, centerPixel.y - h*pixelSize);
+          // var swPoint = new google.maps.Point(centerPixel.x - w*pixelSize, centerPixel.y + h*pixelSize);
+          // var ne = map.getProjection().fromPointToLatLng(nePoint);
+          // var sw = map.getProjection().fromPointToLatLng(swPoint);
+
           for (tile of parsed_data[0]) {
-              let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+	      let myLatLng = {lat:tile["lat"], lng:tile["lng"]};
+	      var latLng = new google.maps.LatLng(tile["lat"], tile["lng"]);
+	      var centerPixel = currentMap.map.getProjection().fromLatLngToPoint(latLng);
+              //var pixelSize = Math.pow(2, -currentMap.map.getZoom());
+	      var pixelSize = Math.pow(2, -21);
+	      var centerPixel = currentMap.map.getProjection().fromLatLngToPoint(latLng);
+              var nePoint = new google.maps.Point(centerPixel.x + w*pixelSize, centerPixel.y - h*pixelSize);
+              var swPoint = new google.maps.Point(centerPixel.x - w*pixelSize, centerPixel.y + h*pixelSize);
+              var ne = currentMap.map.getProjection().fromPointToLatLng(nePoint);
+              var sw = currentMap.map.getProjection().fromPointToLatLng(swPoint);
+	      
+	      // let imageBounds = {north: tile["bounds"][2], south: tile["bounds"][0], east: tile["bounds"][3], west: tile["bounds"][1]};
+	      let imageBounds = {north: ne.lat(), south: sw.lat(), east: ne.lng(), west: sw.lng()};
+	      let imageBoundsMask = {north: ne.lat()+0.00002, south: sw.lat()+0.00002, east: ne.lng()-0.00006, west: sw.lng()-0.00006};
               var stroke_color = "#FF0000";
               var z_index = 1;
               if (tile["prediction"] == 1){
                   stroke_color = "#00FF00";
                   z_index = 2;
+		  var image_marker = "https://solarnet-data.s3.us-west-2.amazonaws.com/images/solar_panel_icon.png";
+		  /*marker = new google.maps.Marker({
+                      position: myLatLng,
+                      map: currentMap.map,
+		      //icon: image_marker
+                  });
+                  currentMap.predictions_markers.push(marker);*/
+		  
               }
               const rectangle = new google.maps.Rectangle({
                 strokeColor: stroke_color,
@@ -250,15 +282,15 @@ function goToPlace(lng, lat, place) {
                 zIndex: z_index
               });
               currentMap.predictions_rectangles.push(rectangle);
-              if (tile["mask_url"] != ""){
+              /*if (tile["mask_url"] != ""){
                   spOverlay = new google.maps.GroundOverlay(
                      tile["mask_url"],
-                     imageBounds
+                     imageBoundsMask
                   );
                   spOverlay.setMap(currentMap.map);
                   spOverlay.setOpacity(0.7);
                   currentMap.predictions_overlays.push(spOverlay);
-              };
+              };*/
         };
         $('#load-spinner-two').hide();
     });
