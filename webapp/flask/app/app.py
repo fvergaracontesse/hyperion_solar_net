@@ -40,6 +40,7 @@ load_dotenv()
 
 # Flask boilerplate stuff
 app = Flask(__name__)
+
 if app.config["ENV"] == "production":
     app.config.from_object("config.ProductionConfig")
 else:
@@ -102,6 +103,100 @@ def map_func():
 def add_header(response):
     response.cache_control.max_age = 1
     return response
+
+
+@app.route('/api/classification', methods=["POST"])
+def classification():
+    bounds = request.form.get("bounds")
+    # height = float(request.form.get("height"))
+    # width = float(request.form.get("width"))
+    # zoom = int(request.form.get("zoom"))
+
+    # cropping
+    crop_tiles = False
+
+    # empty results
+    results = []
+    # create a map provider object
+    map_object = GoogleMap(google_api_key)
+
+    # divide map into tiles
+    tiles, nx, ny, meters, h, w = map_object.make_tiles(bounds, crop_tiles=crop_tiles)
+
+    tiles = [t for t in tiles if ts_maps.check_tile_against_bounds(t, bounds)]
+    for i, tile in enumerate(tiles):
+        tile['id'] = i
+
+    # make a new tempdir name and attach to session
+    tmpdir = tempfile.TemporaryDirectory()
+    tmpdirname = tmpdir.name
+    tmpfilename = tmpdirname[tmpdirname.rindex("/")+1:]
+    tmpdir.cleanup()
+    os.mkdir(tmpdirname)
+
+    # retrieve tiles and metadata if available
+    meta = map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
+
+    for i, tile in enumerate(tiles):
+        tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
+        
+    model_classification = Classification()
+    tiles = model_classification.predict(tiles)
+    
+    return json.dumps({"message": "Ok", "status_code": 200, "body": tiles})
+
+
+@app.route('/api/segmentation', methods=['POST'])
+def segmentation():
+    bounds = request.form.get("bounds")
+    crop_tiles = False
+
+    # empty results
+    results = []
+    # create a map provider object
+    map_object = GoogleMap(google_api_key)
+
+    # divide map into tiles
+    tiles, nx, ny, meters, h, w = map_object.make_tiles(bounds, crop_tiles=crop_tiles)
+
+    tiles = [t for t in tiles if ts_maps.check_tile_against_bounds(t, bounds)]
+    for i, tile in enumerate(tiles):
+        tile['id'] = i
+
+    # make a new tempdir name and attach to session
+    tmpdir = tempfile.TemporaryDirectory()
+    tmpdirname = tmpdir.name
+    tmpfilename = tmpdirname[tmpdirname.rindex("/")+1:]
+    tmpdir.cleanup()
+    os.mkdir(tmpdirname)
+
+    # retrieve tiles and metadata if available
+    meta = map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
+
+    for i, tile in enumerate(tiles):
+        tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
+
+    model_classification = Classification()
+    tiles = model_classification.predict(tiles)
+    tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
+    total_panels_area = 0
+    total_panels_count = 0
+    if len(tiles_pred) > 0:
+        model_segmentation = Segmentation()
+        # our tiles for prediction are at zoom 21
+        result_tiles = model_segmentation.predict(tiles_pred, 21)
+        for i, tile in enumerate(tiles):
+            if tile["id"] in result_tiles:
+                tiles[i] = result_tiles[tile["id"]]
+                if "mask_url" in tiles[i]:
+                    tiles[i]["mask_url"] = f"/{tiles[i]['mask_url']}"
+                if "panels_area" in tiles[i]:
+                    total_panels_area += tiles[i]["panels_area"]
+                if "panels_count" in tiles[i]:
+                    total_panels_count += tiles[i]["panels_count"]
+
+    return json.dumps({"message": "Ok", "status_code": 200, "body": {"tiles": tiles, "total_panels_area": total_panels_area, "total_panels_count": total_panels_count}})
+
 
 @app.route('/getplace', methods=['POST'])
 def get_place():
@@ -183,9 +278,9 @@ def get_objects():
         tile['id'] = i
 
 
-    tiles_overlap = [t for t in tiles_overlap if ts_maps.check_tile_against_bounds(t, bounds)]
-    for i, tile_overlap in enumerate(tiles_overlap):
-        tile_overlap['id'] = i
+    #tiles_overlap = [t for t in tiles_overlap if ts_maps.check_tile_against_bounds(t, bounds)]
+    #for i, tile_overlap in enumerate(tiles_overlap):
+    #    tile_overlap['id'] = i
 
     print(" tiles left after viewport and polygon filter:", len(tiles))
 
@@ -209,9 +304,9 @@ def get_objects():
     session['metadata'] = meta
     print(" asynchronously retrieved", len(tiles), "files")
 
-    meta_overlap = map_object.get_sat_maps(tiles_overlap, loop, tmpdirname, tmpfilename+"_overlap_")
-    session['metadata_overlay'] = meta_overlap
-    print(" asynchronously retrieved", len(tiles), "files")
+    #meta_overlap = map_object.get_sat_maps(tiles_overlap, loop, tmpdirname, tmpfilename+"_overlap_")
+    #session['metadata_overlay'] = meta_overlap
+    #print(" asynchronously retrieved", len(tiles), "files")
 
     # we create tiles at zoom=21, so factor the size by the current zoom
     zoom_factor = 2**21 / 2**zoom
@@ -225,9 +320,9 @@ def get_objects():
         tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
         tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
 
-    for i, tile_overlap in enumerate(tiles_overlap):
-        tile_overlap['filename'] = tmpdirname+"/"+tmpfilename+"_overlap_"+str(i)+".jpg"
-        tile_overlap['bounds'] = ts_imgutil.getImageBounds(tile_overlap['w'], tile_overlap['h'], xScale, yScale, tile_overlap['lat'], tile_overlap['lng'])
+    #for i, tile_overlap in enumerate(tiles_overlap):
+    #    tile_overlap['filename'] = tmpdirname+"/"+tmpfilename+"_overlap_"+str(i)+".jpg"
+    #    tile_overlap['bounds'] = ts_imgutil.getImageBounds(tile_overlap['w'], tile_overlap['h'], xScale, yScale, tile_overlap['lat'], tile_overlap['lng'])
 
     if type == 'tiles':
         print(" returning number of tiles")
@@ -236,24 +331,24 @@ def get_objects():
         model_classification = Classification()
         print(" returning classification prediction")
         # tiles = model.predict(tiles)
-        tiles_overlap = model_classification.predict(tiles_overlap)
-        for tile in tiles:
-            for tile_overlap in tiles_overlap:
-                check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
-                if check:
-                    tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
+        tiles = model_classification.predict(tiles)
+        #for tile in tiles:
+        #    for tile_overlap in tiles_overlap:
+        #        check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
+        #        if check:
+        #            tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
         return json.dumps(tiles)
     elif type == 'segmentation':
         print("SEGMENTATION", flush=True)
         model_classification = Classification()
         print(" returning segmentation prediction")
-        tiles_overlap = model_classification.predict(tiles_overlap)
-        print("TILES OVERLAP", tiles_overlap, flush=True)
-        for tile in tiles:
-            for tile_overlap in tiles_overlap:
-                check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
-                if check:
-                    tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
+        tiles = model_classification.predict(tiles)
+        #print("TILES OVERLAP", tiles_overlap, flush=True)
+        #for tile in tiles:
+        #    for tile_overlap in tiles_overlap:
+        #        check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
+        #        if check:
+        #            tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
         tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
         print("CLASSIFICATION TILES", flush=True)
         print(tiles_pred, flush=True)

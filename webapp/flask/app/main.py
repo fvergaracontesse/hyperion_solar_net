@@ -8,6 +8,7 @@
 # Based on code done by TowerScout.
 
 # import basic functionality
+from blueprints.endpoints import blueprint as endpoints
 import helpers.ts_imgutil as ts_imgutil
 from helpers.ts_gmaps import GoogleMap
 from helpers.sn_helpers import check_tile_center_against_bounds
@@ -44,6 +45,8 @@ providers = {
 
 # Flask boilerplate stuff
 app = Flask(__name__)
+app.register_blueprint(endpoints)
+
 if app.config["ENV"] == "production":
     app.config.from_object("config.ProductionConfig")
 else:

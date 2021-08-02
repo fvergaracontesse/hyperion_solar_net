@@ -197,7 +197,7 @@ function getPlaceTiles() {
 }
 
 function removePlaceTiles() {
-    $('.places_tiles').hide();
+    //$('.places_tiles').hide();
     if (map_modified==1){
         map_modified = 0;
         currentMap.removeOverlays();
