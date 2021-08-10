@@ -8,22 +8,21 @@ import math
 import uuid
 from scipy.ndimage import zoom as zm
 import os
-import time
 import requests
-import json
 
 from helpers.sn_helpers import (
     chunks,
-    get_image_from_s3,
     get_image_stream_from_s3,
     sigmoid
 )
+
 
 class NumpyArrayEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return JSONEncoder.default(self, obj)
+
 
 class Classification:
 
@@ -49,7 +48,7 @@ class Classification:
         batched_input = np.zeros((len(tiles), 600, 600, 3), dtype=np.float32)
         for i, tile in enumerate(tiles):
             tmp_image = cv2.imread(tile["filename"])
-            resized = cv2.resize(tmp_image, (600, 600))[...,::-1].astype(np.float32)
+            resized = cv2.resize(tmp_image, (600, 600))[..., ::-1].astype(np.float32)
             x = np.expand_dims(resized.reshape(600, 600, 3), axis=0)
             batched_input[i, :] = x
         batches = chunks(batched_input.tolist(), 10)
@@ -64,6 +63,7 @@ class Classification:
         for i, tile in enumerate(tiles):
             tile["prediction"] = predictions[i][0]
         return tiles
+
 
 class Segmentation:
 
@@ -102,7 +102,7 @@ class Segmentation:
         # from https://news.energysage.com/average-solar-panel-size-weight/
         area_per_panel = 17.6
         # calculate the number of panels rounding to whole number
-        panel_count = round((panel_area / area_per_panel),0)
+        panel_count = round((panel_area / area_per_panel), 0)
         panel_area = round(panel_area, 2)
         return(panel_area, panel_count)
 
@@ -134,12 +134,12 @@ class Segmentation:
             predicted_matrix = np.array(Image.fromarray(prediction.reshape(self.image_width, self.image_height)).resize((600, 600)))
 
             # convert mask to a 4D image
-            array=(prediction * 255).astype(np.uint8).reshape(self.image_width, self.image_height,1)
+            array = (prediction * 255).astype(np.uint8).reshape(self.image_width, self.image_height, 1)
             array = zm(array, (1, 1, 4))
             # get row column value of pixels having value 1
-            row_col = np.where(array>0)
+            row_col = np.where(array > 0)
             if len(row_col) > 0:
-                im_coords = list(zip(row_col[0],row_col[1]))
+                im_coords = list(zip(row_col[0], row_col[1]))
                 for cord in im_coords:
                     # pixels of value 1 are set to red color
                     array[cord] = [255, 0, 0, 255]

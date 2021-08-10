@@ -3,17 +3,16 @@ from shapely.geometry import Polygon
 import json
 import boto3
 import pickle
-from botocore.exceptions import ClientError
 import hashlib
 import hmac
 import base64
 import urllib.parse as urlparse
-import io
-import numpy as np
-# from tensorflow.keras.preprocessing.image import load_img
 from PIL import Image
+import numpy as np
+
 
 def check_tile_center_against_bounds(t, bounds):
+    """Check if tile is within bounds."""
     SWlat, SWlng, NElat, NElng = bounds
     lat_in = SWlat <= t["lat"] <= NElat or SWlat >= t["lat"] >= NElat
     lon_in = SWlng <= t["lng"] <= NElng or SWlng >= t["lng"] >= NElng
@@ -21,6 +20,7 @@ def check_tile_center_against_bounds(t, bounds):
 
 
 def get_json_file_from_s3(path):
+    """Get a json file from S3."""
     s3client = boto3.client(
         's3'
     )
@@ -34,7 +34,9 @@ def get_json_file_from_s3(path):
     contents = filedata.decode('utf-8')
     return json.loads(contents)
 
+
 def get_image_from_s3(path):
+    """Get images from s3."""
     s3client = boto3.client(
         's3'
     )
@@ -48,7 +50,9 @@ def get_image_from_s3(path):
     img = Image.open(fileobj['Body'])
     return img
 
+
 def get_image_stream_from_s3(path):
+    """Get image stream from s3."""
     s3client = boto3.client(
         's3'
     )
@@ -63,7 +67,8 @@ def get_image_stream_from_s3(path):
 
 
 def get_state_tiles(place_json, map_object, activate=True):
-    if activate == True:
+    """Get tiles based on a geojson file within a region."""
+    if activate is True:
         '''
         :type activate: boolean
         :rtype tiles_poly: int
@@ -95,17 +100,17 @@ def get_state_tiles(place_json, map_object, activate=True):
 
         # finds the bounds (minx, miny, maxx, maxy) of city/state polygon
         place_bounds_str = str(place_poly.bounds)
-        place_bounds_rep = place_bounds_str.replace("(","")
-        place_bounds = place_bounds_rep.replace(")","")
+        place_bounds_rep = place_bounds_str.replace("(", "")
+        place_bounds = place_bounds_rep.replace(")", "")
 
         # print("PLACE BOUNDS", place_bounds)
 
-        ##### use make_tiles to get all tiles within state bounds ##########################################
+        # use make_tiles to get all tiles within state bounds
         tiles_square, nx, ny, meters, h, w = map_object.make_tiles(place_poly.bounds, crop_tiles=False, normal=False)
 
         # determine if the individual tile is within the state polygon
         # declare tiles_poly
-        tiles_poly=[]
+        tiles_poly = []
 
         for tile in tiles_square:
             # create the coordinates of the tile boundary
@@ -114,37 +119,25 @@ def get_state_tiles(place_json, map_object, activate=True):
             north = (tile['lng'] + (tile['h']/2))
             south = (tile['lng'] - (tile['h']/2))
             # create the boundary coordinates of the tile
-            check_tile = Polygon([(south,east), (south, west), (north, west), (north, east)])
+            check_tile = Polygon([(south, east), (south, west), (north, west), (north, east)])
 
             # check if the tile intersects with the state_polygon. If true, append tile information to tiles_poly
-            if check_tile.intersects(place_poly) == True:
+            if check_tile.intersects(place_poly) is True:
                 tiles_poly.append(tile)
-
 
     return tiles_poly, place_poly, place_bounds
 
-def create_temporary_directory():
-    mpdir = tempfile.TemporaryDirectory()
-    tmpdirname = tmpdir.name
-    tmpfilename = tmpdirname[tmpdirname.rindex("/")+1:]
-    print("creating tmp dir", tmpdirname)
-    session['tmpdirname'] = tmpdirname
-    tmpdir.cleanup()
-    os.mkdir(tmpdirname)
-    print("created tmp dir", tmpdirname)
 
 def save_pickle_file(filename, data):
-    dbfile = open(filename, 'ab')
-    pickle.dump(data, dbfile)
-    dbfile.close()
-
-def save_pickle_file(filename, data):
+    """Save to pickle file."""
     dbfile = open(filename, 'ab')
     pickle.dump(data, dbfile)
     dbfile.close()
     return data
 
+
 def load_pickle_file(filename):
+    """Load a pickle file."""
     dbfile = open(filename, 'rb')
     data = pickle.load(dbfile)
     dbfile.close()
@@ -152,20 +145,21 @@ def load_pickle_file(filename):
 
 
 def upload_file(file_name, bucket, content):
-    """Upload a file to an S3 bucket
+    """Upload a file to an S3 bucket.
 
     :param file_name: File to upload
     :param bucket: Bucket to upload to
     :param object_name: S3 object name. If not specified then file_name is used
     :return: True if file was uploaded, else False
     """
-
     # If S3 object_name was not specified, use file_name
     object_name = file_name
 
     # Upload the file
     s3_client = boto3.resource('s3')
     response = s3_client.Object(bucket, object_name).put(Body=content)
+    return response
+
 
 def chunks(l, n):
     """Iterador para generar batches.
@@ -181,18 +175,19 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
+# This function is obtained from GOOGLE MAP API.
 def sign_url(input_url=None, secret=None):
-    """ Sign a request URL with a URL signing secret.
-      Usage:
-      from urlsigner import sign_url
-      signed_url = sign_url(input_url=my_url, secret=SECRET)
-      Args:
-      input_url - The URL to sign
-      secret    - Your URL signing secret
-      Returns:
-      The signed request URL
-  """
+    """Sign a request URL with a URL signing secret.
 
+    :Usage
+        from urlsigner import sign_url
+        signed_url = sign_url(input_url=my_url, secret=SECRET)
+    :Args
+        input_url - The URL to sign
+        secret    - Your URL signing secret
+    :Returns
+        The signed request URL
+    """
     if not input_url or not secret:
         raise Exception("Both input_url and secret are required")
 
@@ -217,5 +212,7 @@ def sign_url(input_url=None, secret=None):
     # Return signed URL
     return original_url + "&signature=" + encoded_signature.decode()
 
+
 def sigmoid(x):
-  return 1 / (1 + np.exp(-x))
+    """Return sigmoid."""
+    return 1 / (1 + np.exp(-x))

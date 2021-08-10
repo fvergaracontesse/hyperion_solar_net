@@ -1,4 +1,3 @@
-#
 # SolarNet
 # A tool for solar panels from satelite images
 #
@@ -7,34 +6,26 @@
 #
 # Based on code done by TowerScout.
 
+"""Main application."""
+
 # import basic functionality
 import helpers.ts_imgutil as ts_imgutil
 from helpers.ts_gmaps import GoogleMap
-from helpers.sn_helpers import check_tile_center_against_bounds
 from models import Classification, Segmentation
 import helpers.ts_maps as ts_maps
 from flask import Flask, render_template, send_from_directory, request, session, Response
-from flask_session import Session
-from waitress import serve
 import json
 import os
-import zipfile
-import ssl
 import asyncio
 import time
 import tempfile
 from shutil import rmtree
-from PIL import Image, ImageDraw
-import threading
-import gc
 import datetime
-import sys
 import math
 from helpers.sn_helpers import (
     load_pickle_file,
 )
 from dotenv import load_dotenv
-import logging
 
 load_dotenv()
 
@@ -58,10 +49,12 @@ google_api_key = app.config["GOOGLE_API_KEY"]
 
 loop = asyncio.new_event_loop()
 
+
 # route for js code
 @app.route('/img/<path:path>')
 def send_img(path):
     return send_from_directory('img', path)
+
 
 # route for js code
 @app.route('/js/<path:path>')
@@ -83,8 +76,6 @@ def map_func():
     offset = datetime.timezone(datetime.timedelta(hours=-5))  # Atlanta / CDC
     print("Main page loaded:", datetime.datetime.now(offset), "EST")
     print("Browser:", request.user_agent.string)
-    # if not request.user_agent.browser in ['chrome','firefox']:
-    #     return render_template('incompatible.html')
     # clean out any temp dirs
     if "tmpdirname" in session:
         rmtree(session['tmpdirname'], ignore_errors=True, onerror=None)
@@ -108,15 +99,10 @@ def add_header(response):
 @app.route('/api/classification', methods=["POST"])
 def classification():
     bounds = request.form.get("bounds")
-    # height = float(request.form.get("height"))
-    # width = float(request.form.get("width"))
-    # zoom = int(request.form.get("zoom"))
 
     # cropping
     crop_tiles = False
 
-    # empty results
-    results = []
     # create a map provider object
     map_object = GoogleMap(google_api_key)
 
@@ -135,14 +121,14 @@ def classification():
     os.mkdir(tmpdirname)
 
     # retrieve tiles and metadata if available
-    meta = map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
+    map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
 
     for i, tile in enumerate(tiles):
         tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
-        
+
     model_classification = Classification()
     tiles = model_classification.predict(tiles)
-    
+
     return json.dumps({"message": "Ok", "status_code": 200, "body": tiles})
 
 
@@ -151,8 +137,6 @@ def segmentation():
     bounds = request.form.get("bounds")
     crop_tiles = False
 
-    # empty results
-    results = []
     # create a map provider object
     map_object = GoogleMap(google_api_key)
 
@@ -171,14 +155,14 @@ def segmentation():
     os.mkdir(tmpdirname)
 
     # retrieve tiles and metadata if available
-    meta = map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
+    map_object.get_sat_maps(tiles, loop, tmpdirname, tmpfilename)
 
     for i, tile in enumerate(tiles):
         tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
 
     model_classification = Classification()
     tiles = model_classification.predict(tiles)
-    tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
+    tiles_pred = list(filter(lambda x: x["prediction"] == 1, tiles))
     total_panels_area = 0
     total_panels_count = 0
     if len(tiles_pred) > 0:
@@ -200,17 +184,24 @@ def segmentation():
 
 @app.route('/getplace', methods=['POST'])
 def get_place():
+    """Function used to return a list of tiles from preprocessed regions.
+    :Usage
+        This function receives a place and searches for segmentation and classification already saved on disk.
+    :Args
+        place: the region to return tiles info.
+    :Returns
+        List of tiles
+    """
     zoom = 21
     place = request.form.get("place")
     file_name = f'data/coordinates/coord_{place}_segmentation'
     tiles = load_pickle_file(file_name)
     zoom_factor = 2**21 / 2**zoom
-    picHeight = 600/zoom_factor #Resulting image height in pixels (x2 if scale parameter is set to 2)
-    picWidth = 600/zoom_factor
+    picHeight = 600 / zoom_factor  # Resulting image height in pixels (x2 if scale parameter is set to 2)
+    picWidth = 600 / zoom_factor
 
     xScale = math.pow(2, zoom) / (picWidth/256)
     yScale = math.pow(2, zoom) / (picHeight/256)
-    total_tiles = 0
     total_tiles_sp = 0
     total_count_sp = 0
     total_sp_area = 0
@@ -226,15 +217,25 @@ def get_place():
             total_sp_area += tile["panels_area"]
         if "panels_count" in tile:
             total_count_sp += tile["panels_count"]
-        if "prediction" in tile and int(tile["prediction"])==1:
+        if "prediction" in tile and int(tile["prediction"]) == 1:
             total_tiles_sp += 1
-    return json.dumps([tiles, total_tiles_sp, total_count_sp, round(total_sp_area,2), len(tiles), place])
+    return json.dumps([tiles, total_tiles_sp, total_count_sp, round(total_sp_area, 2), len(tiles), place])
 
 
 @app.route('/getobjects', methods=['POST'])
 def get_objects():
-    print("TILE", flush=True)
-    print(" session:", id(session))
+    """Function that return objects from website requests.
+    :Usage
+        Receives a type, bounds, height and width, and zoom of map.
+    :Args
+        type: Type of object you want to retreive. (tiles, classification, segmentation)
+        bounds: bounds list from google map.
+        height: google map actual height in pixels.
+        width: google map actual width in pixels.
+        zoom: google map actual zoom level.
+    :Returns
+        List of tiles.
+    """
 
     # check whether this session is over its limit
     if 'tiles' not in session:
@@ -245,7 +246,6 @@ def get_objects():
         return "-1"
 
     # start time, get params
-    start = time.time()
     type = request.form.get("type")
     bounds = request.form.get("bounds")
     height = float(request.form.get("height"))
@@ -260,8 +260,6 @@ def get_objects():
     # cropping
     crop_tiles = False
 
-    # empty results
-    results = []
     # create a map provider object
     map_object = GoogleMap(google_api_key)
 
@@ -276,11 +274,6 @@ def get_objects():
     tiles = [t for t in tiles if ts_maps.check_tile_against_bounds(t, bounds)]
     for i, tile in enumerate(tiles):
         tile['id'] = i
-
-
-    #tiles_overlap = [t for t in tiles_overlap if ts_maps.check_tile_against_bounds(t, bounds)]
-    #for i, tile_overlap in enumerate(tiles_overlap):
-    #    tile_overlap['id'] = i
 
     print(" tiles left after viewport and polygon filter:", len(tiles))
 
@@ -304,13 +297,9 @@ def get_objects():
     session['metadata'] = meta
     print(" asynchronously retrieved", len(tiles), "files")
 
-    #meta_overlap = map_object.get_sat_maps(tiles_overlap, loop, tmpdirname, tmpfilename+"_overlap_")
-    #session['metadata_overlay'] = meta_overlap
-    #print(" asynchronously retrieved", len(tiles), "files")
-
     # we create tiles at zoom=21, so factor the size by the current zoom
     zoom_factor = 2**21 / 2**zoom
-    picHeight = 600/zoom_factor #Resulting image height in pixels (x2 if scale parameter is set to 2)
+    picHeight = 600 / zoom_factor  # Resulting image height in pixels (x2 if scale parameter is set to 2)
     picWidth = 600/zoom_factor
 
     xScale = math.pow(2, zoom) / (picWidth/256)
@@ -320,40 +309,17 @@ def get_objects():
         tile['filename'] = tmpdirname+"/"+tmpfilename+str(i)+".jpg"
         tile['bounds'] = ts_imgutil.getImageBounds(tile['w'], tile['h'], xScale, yScale, tile['lat'], tile['lng'])
 
-    #for i, tile_overlap in enumerate(tiles_overlap):
-    #    tile_overlap['filename'] = tmpdirname+"/"+tmpfilename+"_overlap_"+str(i)+".jpg"
-    #    tile_overlap['bounds'] = ts_imgutil.getImageBounds(tile_overlap['w'], tile_overlap['h'], xScale, yScale, tile_overlap['lat'], tile_overlap['lng'])
-
     if type == 'tiles':
-        print(" returning number of tiles")
         return json.dumps(tiles)
     elif type == 'classification':
         model_classification = Classification()
-        print(" returning classification prediction")
-        # tiles = model.predict(tiles)
         tiles = model_classification.predict(tiles)
-        #for tile in tiles:
-        #    for tile_overlap in tiles_overlap:
-        #        check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
-        #        if check:
-        #            tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
         return json.dumps(tiles)
     elif type == 'segmentation':
-        print("SEGMENTATION", flush=True)
         model_classification = Classification()
-        print(" returning segmentation prediction")
         tiles = model_classification.predict(tiles)
-        #print("TILES OVERLAP", tiles_overlap, flush=True)
-        #for tile in tiles:
-        #    for tile_overlap in tiles_overlap:
-        #        check = check_tile_center_against_bounds(tile, tile_overlap["bounds"])
-        #        if check:
-        #            tile["prediction"] = tile_overlap["prediction"] if "prediction" not in tile else max(tile["prediction"], tile_overlap["prediction"])
-        tiles_pred = list(filter(lambda x: x["prediction"]==1, tiles))
-        print("CLASSIFICATION TILES", flush=True)
-        print(tiles_pred, flush=True)
+        tiles_pred = list(filter(lambda x: x["prediction"] == 1, tiles))
         if len(tiles_pred) > 0:
-            print("SEGMENTATION", tiles_pred, flush=True)
             model_segmentation = Segmentation()
             # our tiles for prediction are at zoom 21
             result_tiles = model_segmentation.predict(tiles_pred, 21)
@@ -362,6 +328,4 @@ def get_objects():
                     tiles[i] = result_tiles[tile["id"]]
                     if "mask_url" in tiles[i]:
                         tiles[i]["mask_url"] = f"/{tiles[i]['mask_url']}"
-        else:
-            print("NO TILES FOR PREDICTION")
         return json.dumps(tiles)
